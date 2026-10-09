@@ -1,0 +1,1270 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Évaluation de cinématique</title>
+<style>
+/* Layout : copie d'examen numérique. Bandeau fixe (élève, chrono, pénalités), onglets-thèmes, une question par carte
+   à côté du document ressource ; schémas cinématiques aux couleurs normalisées des classes d'équivalence. */
+:root{
+  --paper:#eef1f4; --surface:#ffffff; --sunk:#f5f7f9; --ink:#141a22; --muted:#596472; --line:#d5dbe2;
+  --accent:#0d5c6e; --accent-ink:#ffffff; --accent-soft:#dcedf0;
+  --k0:#1b1f25; --k1:#cc2f27; --k2:#1d8746; --k3:#1f5fc0; --k4:#d9790d; --k3-soft:#dbe7f8; --k2-soft:#dcf1e3;
+  --pos:#7b3cc2; --vel:#1d8746; --acc:#d9620d;
+  --ok:#137a43; --ok-soft:#ddf2e6; --bad:#b4261c; --bad-soft:#fbe3e0; --warn:#8f5a00; --warn-soft:#fbefd2; --nsp:#5f6b7a; --nsp-soft:#e8ecf0;
+  --group:#8a96a6; --bar:#141a22; --bar-ink:#eef1f4;
+  --f-display:"Bahnschrift","DIN Alternate","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:ui-monospace,"Cascadia Mono",Consolas,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e1318; --surface:#161d24; --sunk:#121820; --ink:#e3e9ef; --muted:#9aa7b4; --line:#2b3540;
+  --accent:#5fc3d6; --accent-ink:#06222a; --accent-soft:#163540;
+  --k0:#d7dde4; --k1:#ff6b60; --k2:#4fd287; --k3:#6fa4ff; --k4:#ffa64a; --k3-soft:#1a2b45; --k2-soft:#15301f;
+  --pos:#bb8cf5; --vel:#4fd287; --acc:#ff9a52;
+  --ok:#54d68f; --ok-soft:#123222; --bad:#ff7b70; --bad-soft:#3b1714; --warn:#f2c35d; --warn-soft:#352a10; --nsp:#a7b2be; --nsp-soft:#222b34;
+  --group:#7d8a99; --bar:#05080b; --bar-ink:#e3e9ef; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#0e1318; --surface:#161d24; --sunk:#121820; --ink:#e3e9ef; --muted:#9aa7b4; --line:#2b3540;
+  --accent:#5fc3d6; --accent-ink:#06222a; --accent-soft:#163540;
+  --k0:#d7dde4; --k1:#ff6b60; --k2:#4fd287; --k3:#6fa4ff; --k4:#ffa64a; --k3-soft:#1a2b45; --k2-soft:#15301f;
+  --pos:#bb8cf5; --vel:#4fd287; --acc:#ff9a52;
+  --ok:#54d68f; --ok-soft:#123222; --bad:#ff7b70; --bad-soft:#3b1714; --warn:#f2c35d; --warn-soft:#352a10; --nsp:#a7b2be; --nsp-soft:#222b34;
+  --group:#7d8a99; --bar:#05080b; --bar-ink:#e3e9ef; color-scheme:dark;}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.8rem,4.5vw,2.7rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.45rem;font-weight:700}
+h3{font-size:1.08rem;font-weight:700}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.vec{position:relative;display:inline-block;padding-top:.3em;line-height:1}
+.vec::after{content:"";position:absolute;left:5%;right:1px;top:.08em;height:1.5px;background:currentColor}
+.vec::before{content:"";position:absolute;right:-1px;top:calc(.08em - 3px);border-left:6px solid currentColor;border-top:3.8px solid transparent;border-bottom:3.8px solid transparent}
+
+/* bandeau */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bar);color:var(--bar-ink)}
+.bar-in{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:10px;display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}
+.brand b{font-family:var(--f-display);font-size:1.12rem;letter-spacing:.02em}
+.brand span{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.info{display:flex;gap:6px 14px;align-items:center;flex-wrap:wrap;font-size:.88rem}
+.info .who{font-weight:700}
+.chrono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;background:rgba(127,127,127,.22);padding:2px 9px;border-radius:6px}
+.chrono.over{background:var(--bad);color:#fff}
+.pen{font-family:var(--f-mono);font-size:.82rem}
+.pen.has{color:#ffd27a}
+.bar-btn{border:1px solid rgba(127,127,127,.5);background:transparent;color:inherit;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.86rem;display:inline-flex;gap:6px;align-items:center}
+.bar-btn:hover{background:rgba(127,127,127,.2)}
+.bar-btn svg{width:16px;height:16px}
+
+.alert{background:var(--bad);color:#fff}
+.alert .in{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:9px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-weight:700}
+.alert .sp{flex:1}
+.alert button{background:#fff;color:#8c1a12;border:0;border-radius:7px;padding:6px 12px;font-weight:700;cursor:pointer}
+
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 80px}
+.screen{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+.btn{border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.1);background:var(--accent)}
+.btn.ghost{border-color:var(--line);color:var(--ink)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn.warn{border-color:var(--warn);color:var(--warn)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:5px 11px;font-size:.86rem}
+.btn.lg{padding:12px 22px;font-size:1.05rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* identification */
+.login{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:24px;align-items:start}
+.login-intro{display:flex;flex-direction:column;gap:14px;padding-top:8px}
+.themes-list{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.themes-list li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:baseline}
+.themes-list .n{font-family:var(--f-mono);font-weight:700;color:var(--accent)}
+.search{position:relative;display:flex;flex-direction:column;gap:6px}
+.search label{font-weight:700}
+.search input{width:100%;font-size:1.1rem;padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--sunk)}
+.search input:focus{border-color:var(--accent);outline:none}
+.ac{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.16);z-index:20;overflow:hidden;max-height:320px;overflow-y:auto}
+.ac button{display:flex;width:100%;text-align:left;border:0;background:none;padding:10px 14px;cursor:pointer;gap:8px;align-items:baseline;border-bottom:1px solid var(--line)}
+.ac button:last-child{border-bottom:0}
+.ac button[aria-selected="true"],.ac button:hover{background:var(--accent-soft)}
+.ac .cl{margin-left:auto;font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.ac .none{padding:10px 14px;color:var(--muted)}
+.picked{display:flex;flex-direction:column;gap:12px;border:2px solid var(--accent);border-radius:12px;padding:16px;background:var(--accent-soft)}
+.picked .name{font-family:var(--f-display);font-size:1.3rem;font-weight:700}
+.status-note{font-size:.93rem}
+
+/* consignes */
+.rules{display:flex;flex-direction:column;gap:14px;max-width:820px}
+.rules ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:9px}
+.rules li{padding-left:4px}
+.red{color:var(--bad);font-weight:800}
+.pen-tag{font-family:var(--f-mono);font-weight:700;color:var(--bad);white-space:nowrap}
+
+/* examen */
+.exam-top{display:flex;flex-direction:column;gap:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{flex:1 1 200px;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;position:relative}
+.tab .t{font-weight:700}
+.tab .c{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+.tab[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+.tab.done .c{color:var(--ok);font-weight:700}
+.tab .ck{position:absolute;right:12px;top:12px;width:20px;height:20px;color:var(--ok)}
+.progress{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pbar{flex:1 1 200px;height:10px;background:var(--sunk);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .4s}
+.exam-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:900px){.exam-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.tab{flex:1 1 0;min-width:0;padding:8px 10px}.tab .eyebrow{display:none}.tab .t{font-size:.84rem;line-height:1.2}.tab .ck{display:none}}
+.doc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:10px;padding:14px}
+@media (max-width:900px){.doc{position:static}}
+.doc-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fig svg{display:block;width:100%;height:auto;background:var(--sunk);border:1px solid var(--line);border-radius:8px}
+.fig-cap{font-size:.88rem;color:var(--muted)}
+.formulas{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:.92rem;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:4px;border-radius:2px;display:inline-block}
+
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-mono);font-weight:700;font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.pill.done{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pill.nsp{background:var(--nsp-soft);border-color:var(--nsp);color:var(--nsp)}
+.pill.cur{outline:3px solid var(--ink);outline-offset:1px}
+.pill:disabled{opacity:.4;cursor:not-allowed}
+.qcard{display:flex;flex-direction:column;gap:16px;padding:22px}
+.q-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.comp{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:99px}
+.q-prompt{font-size:1.08rem;max-width:68ch}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 14px;cursor:pointer}
+.choice:hover{border-color:var(--accent)}
+.choice .l{font-family:var(--f-mono);font-weight:700;font-size:.82rem;border:1.5px solid currentColor;border-radius:6px;padding:0 7px;color:var(--muted);flex:0 0 auto;margin-top:2px}
+.choice[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.choice[aria-checked="true"] .l{color:var(--accent);background:var(--surface)}
+.fields{display:flex;flex-direction:column;gap:10px}
+.field-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.field-row label{min-width:120px;font-weight:700}
+.field-row input{font-family:var(--f-mono);font-size:1.05rem;width:160px;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--sunk)}
+.field-row input:focus{border-color:var(--accent);outline:none}
+.field-row .u{font-family:var(--f-mono);color:var(--muted)}
+.hint{background:var(--warn-soft);border-radius:9px;padding:10px 13px;font-size:.95rem}
+.hint b{color:var(--warn)}
+.saved{font-size:.88rem;font-weight:700;color:var(--accent)}
+.saved.nsp{color:var(--nsp)}
+.q-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px dashed var(--line);padding-top:14px}
+.q-actions .sp{flex:1}
+.done-card{display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding:26px}
+.done-card .big{font-family:var(--f-display);font-size:1.6rem;font-weight:700;color:var(--ok)}
+
+/* bilan */
+.bilan-head{display:grid;grid-template-columns:auto 1fr;gap:20px 28px;align-items:center}
+@media (max-width:640px){.bilan-head{grid-template-columns:1fr}}
+.score-big{font-family:var(--f-display);font-weight:700;font-size:clamp(3.2rem,11vw,5.2rem);line-height:1;font-variant-numeric:tabular-nums}
+.score-big small{font-size:.38em;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px 16px;font-size:.93rem}
+.facts div{display:flex;flex-direction:column}
+.facts span{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.facts b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:600}
+.facts .minus{color:var(--bad)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:20px}
+.charts>div{min-width:0;display:flex;flex-direction:column;gap:12px}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,190px) 1fr 58px;gap:10px;align-items:center;font-size:.92rem}
+.bar-track{height:14px;background:var(--sunk);border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative}
+.bar-track i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar-track i.lo{background:var(--bad)}
+.bar-track i.mid{background:var(--warn)}
+.bar-row .v{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.radar svg{display:block;width:100%;max-width:520px;height:auto;margin:0 auto}
+.radar .grid{fill:none;stroke:var(--line);stroke-width:1}
+.radar .axis{stroke:var(--line);stroke-width:1}
+.radar .lbl{fill:var(--ink);font-size:12px;font-family:var(--f-body)}
+.radar .tick{fill:var(--muted);font-size:9.5px;font-family:var(--f-mono)}
+.radar .s-ind{fill:var(--accent);fill-opacity:.2;stroke:var(--accent);stroke-width:2.5}
+.radar .s-grp{fill:var(--group);fill-opacity:.12;stroke:var(--group);stroke-width:2;stroke-dasharray:6 4}
+.radar .dot-ind{fill:var(--accent)}
+.key{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;justify-content:center}
+.key span{display:inline-flex;gap:6px;align-items:center}
+.key i{width:22px;height:0;border-top:3px solid var(--accent)}
+.key i.g{border-top:3px dashed var(--group)}
+.comment{border-left:5px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;padding:14px 18px;display:flex;flex-direction:column;gap:8px;max-width:86ch}
+.comment .lvl{font-family:var(--f-display);font-weight:700;font-size:1.15rem}
+details.corr{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details.corr summary{cursor:pointer;padding:12px 16px;font-weight:700;display:flex;gap:10px;align-items:center}
+details.corr summary .sc{margin-left:auto;font-family:var(--f-mono);font-weight:600}
+.corr-list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.corr-item{display:grid;grid-template-columns:1fr auto;gap:6px 14px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.corr-item:last-child{border-bottom:0}
+.corr-item .p{grid-column:1/-1;font-size:.95rem}
+.corr-item .a{font-size:.9rem;color:var(--muted)}
+.corr-item .a b{color:var(--ink);font-weight:600}
+.st{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:99px;white-space:nowrap;align-self:start}
+.st.ok{background:var(--ok-soft);color:var(--ok)}
+.st.partial{background:var(--warn-soft);color:var(--warn)}
+.st.bad{background:var(--bad-soft);color:var(--bad)}
+.st.nsp{background:var(--nsp-soft);color:var(--nsp)}
+.hint-used{color:var(--warn);font-weight:700;font-size:.82rem}
+.export-box{display:flex;flex-direction:column;gap:14px;border:2px solid var(--accent);background:var(--accent-soft)}
+.export-box h3{margin-top:4px}
+.export-msg{background:var(--warn-soft);border-radius:8px;padding:10px 12px;font-size:.93rem}
+.json-area{width:100%;min-height:160px;font-family:var(--f-mono);font-size:.8rem;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}
+
+/* espace enseignant */
+.t-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--sunk)}
+.stat span{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.stat b{display:block;font-family:var(--f-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.res{border-collapse:collapse;width:100%;font-size:.92rem;min-width:760px}
+table.res th,table.res td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.res th{background:var(--sunk);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+table.res td.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+table.res tr.sel td{background:var(--accent-soft)}
+.src-tag{font-size:.72rem;font-family:var(--f-mono);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.missing{font-size:.9rem;color:var(--muted)}
+.t-detail{border-top:3px solid var(--accent)}
+
+/* modales, calculatrice, toast */
+.modal-bg{position:fixed;inset:0;background:rgba(6,10,14,.6);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;width:min(440px,100%);display:flex;flex-direction:column;gap:14px;max-height:92vh;overflow:auto}
+.modal.wide{width:min(1000px,100%)}
+.modal input[type=password]{width:100%;font-size:1.05rem;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--sunk)}
+.modal .err{color:var(--bad);font-size:.9rem;min-height:1.3em}
+.calc{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;width:248px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:8px}
+.calc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:.9rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;margin:-12px -12px 0;padding:10px 12px;border-radius:14px 14px 0 0;background:var(--sunk);border-bottom:1px solid var(--line)}
+.calc-head:active,.calc.dragging .calc-head{cursor:grabbing}
+.calc-head .grip{display:inline-flex;align-items:center;gap:8px}
+.calc-head .grip svg{width:14px;height:14px;color:var(--muted)}
+.calc-head .tools{display:flex;gap:2px}
+.calc.dragging{box-shadow:0 22px 50px rgba(0,0,0,.35);opacity:.96}
+.calc.mini .calc-body{display:none}
+.calc.mini{width:auto}
+.calc-body{display:flex;flex-direction:column;gap:8px}
+.calc-disp{font-family:var(--f-mono);font-size:1.4rem;text-align:right;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+.calc-op{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);text-align:right;min-height:1.1em}
+.calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.calc-keys button{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:9px 0;font-family:var(--f-mono);font-weight:600;cursor:pointer}
+.calc-keys button:hover{border-color:var(--accent)}
+.calc-keys .op{color:var(--accent)}
+.calc-keys .eq{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:10px;font-weight:700;z-index:90;max-width:calc(100% - 32px)}
+.x-btn{border:0;background:none;cursor:pointer;font-size:1.3rem;line-height:1;color:var(--muted);padding:2px 6px}
+.zoom-fig svg{width:100%;height:auto;background:var(--sunk);border-radius:8px}
+
+/* schémas */
+svg .k0{stroke:var(--k0)} svg .k1{stroke:var(--k1)} svg .k2{stroke:var(--k2)} svg .k3{stroke:var(--k3)} svg .k4{stroke:var(--k4)}
+svg .t0{fill:var(--k0)} svg .t1{fill:var(--k1)} svg .t2{fill:var(--k2)} svg .t3{fill:var(--k3)} svg .t4{fill:var(--k4)}
+svg .tm{fill:var(--muted)} svg .tpos{fill:var(--pos)}
+svg .piv{fill:var(--surface);stroke:var(--k0);stroke-width:2.2}
+svg .soft3{fill:var(--k3-soft)} svg .soft2{fill:var(--k2-soft)}
+svg .lbl{font-family:var(--f-body);font-size:15px;font-weight:700}
+svg .cap{font-family:var(--f-body);font-size:13px}
+svg .ttl{font-family:var(--f-display);font-size:15px;font-weight:700;fill:var(--ink)}
+svg .dash{stroke-dasharray:5 5}
+svg .pos{stroke:var(--pos)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand"><b>Évaluation sommative · Cinématique</b><span>Spécialité SI · Terminale</span></div>
+    <div class="info" id="exam-info" hidden>
+      <span class="who" id="i-who"></span>
+      <span class="chrono" id="i-chrono" title="Temps restant (durée conseillée 60 min)">60:00</span>
+      <span class="pen" id="i-pen"></span>
+    </div>
+    <button class="bar-btn" id="btn-calc" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>Calculatrice</button>
+    <button class="bar-btn" id="btn-teacher" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Espace enseignant</button>
+  </div>
+  <div class="alert" id="alert" hidden><div class="in"><span id="alert-txt"></span><span class="sp"></span><button type="button" id="alert-fs">Revenir en plein écran</button></div></div>
+</header>
+
+<main class="wrap">
+
+<!-- IDENTIFICATION -->
+<section class="screen" id="scr-login">
+  <div class="login">
+    <div class="login-intro">
+      <span class="eyebrow">Mécanique · Cinématique</span>
+      <h1>Évaluation sommative de cinématique</h1>
+      <p class="muted">Trois thèmes, une question à la fois. Durée conseillée : 60 minutes.</p>
+      <ul class="themes-list">
+        <li><span class="n">T1</span><span><b>Mouvements et trajectoires</b> · système bielle-manivelle, mouvements relatifs</span></li>
+        <li><span class="n">T2</span><span><b>Translation et rotation</b> · vérin, plateau élévateur, disque</span></li>
+        <li><span class="n">T3</span><span><b>Vecteur cinématique</b> · vitesse et accélération</span></li>
+      </ul>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:16px">
+      <h2>Identification</h2>
+      <div class="search">
+        <label for="who">Ton nom ou ton prénom</label>
+        <input id="who" type="text" autocomplete="off" spellcheck="false" placeholder="Tape au moins 3 lettres" role="combobox" aria-expanded="false" aria-controls="ac" aria-autocomplete="list">
+        <div class="ac" id="ac" role="listbox" hidden></div>
+      </div>
+      <div id="picked"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSIGNES -->
+<section class="screen" id="scr-rules" hidden>
+  <div class="card rules">
+    <span class="eyebrow" id="rules-who"></span>
+    <h2>Consignes</h2>
+    <ol>
+      <li class="red">Lisez bien chaque question avant de répondre : une réponse validée est enregistrée, et la correction n'apparaît qu'au bilan.</li>
+      <li>L'évaluation compte <b>3 thèmes</b> répartis en onglets. Tu choisis l'ordre des thèmes.</li>
+      <li>Dans chaque thème, les questions s'affichent <b>une à la fois</b> : la suivante apparaît quand tu as traité la précédente. Les pastilles numérotées permettent de revenir sur une question déjà vue.</li>
+      <li>Chaque élève a son propre sujet : l'ordre des questions, l'ordre des propositions et les valeurs numériques changent.</li>
+      <li>Une <b>calculatrice</b> est intégrée (bouton en haut de l'écran). La virgule et le point sont acceptés.</li>
+      <li>« <b>Je ne sais pas</b> » vaut 0 point mais reste préférable à une réponse au hasard : ton bilan en tiendra compte.</li>
+      <li>Les <b>indices</b> sont cachés. Chaque indice affiché retire <span class="pen-tag">−0,5 pt</span> sur la note finale.</li>
+      <li>L'évaluation se fait en <b>plein écran</b>. Chaque sortie (touche Échap, changement d'onglet ou de fenêtre) retire <span class="pen-tag">−2 pts</span>.</li>
+      <li>Le bouton « Valider et voir mon bilan » ne s'active que lorsque les 3 thèmes sont entièrement traités.</li>
+      <li>Durée conseillée : <b>60 minutes</b>. Le chronomètre s'affiche en haut de l'écran.</li>
+    </ol>
+    <div class="row"><button class="btn primary lg" type="button" id="btn-begin" disabled>Lisez les consignes… (60 s)</button><button class="btn ghost" type="button" id="btn-rules-back">Ce n'est pas moi</button></div>
+  </div>
+</section>
+
+<!-- EXAMEN -->
+<section class="screen" id="scr-exam" hidden>
+  <div class="exam-top">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="progress"><span class="mono" id="g-prog">0 / 28</span><div class="pbar"><i id="g-bar"></i></div>
+      <button class="btn primary" type="button" id="btn-submit" disabled>Valider et voir mon bilan</button></div>
+  </div>
+  <div class="exam-grid">
+    <aside class="card doc" id="doc"></aside>
+    <div class="screen" id="qzone"></div>
+  </div>
+</section>
+
+<!-- BILAN -->
+<section class="screen" id="scr-bilan" hidden></section>
+
+<!-- ESPACE ENSEIGNANT -->
+<section class="screen" id="scr-teacher" hidden></section>
+
+</main>
+
+<!-- documents ressources -->
+<div id="figs" hidden>
+<div data-fig="T1">
+  <div class="fig"><svg viewBox="0 0 640 270" role="img" aria-label="Schéma cinématique du système bielle-manivelle en couleur">
+    <!-- repère -->
+    <line x1="40" y1="245" x2="95" y2="245" class="k0" stroke-width="1.6"/><path d="M95 245l-8-4v8z" class="t0"/>
+    <line x1="40" y1="245" x2="40" y2="192" class="k0" stroke-width="1.6"/><path d="M40 192l-4 8h8z" class="t0"/>
+    <text x="98" y="249" class="cap t0">x</text><text x="34" y="186" class="cap t0">y</text>
+    <!-- bâti 0 : pivot en A -->
+    <path d="M150 160 L133 192 M150 160 L167 192" class="k0" stroke-width="2.2" fill="none"/>
+    <line x1="122" y1="192" x2="178" y2="192" class="k0" stroke-width="2.4"/>
+    <g class="k0" stroke-width="1.5"><line x1="126" y1="192" x2="119" y2="201"/><line x1="135" y1="192" x2="128" y2="201"/><line x1="144" y1="192" x2="137" y2="201"/><line x1="153" y1="192" x2="146" y2="201"/><line x1="162" y1="192" x2="155" y2="201"/><line x1="171" y1="192" x2="164" y2="201"/><line x1="180" y1="192" x2="173" y2="201"/></g>
+    <!-- bâti 0 : glissière -->
+    <line x1="350" y1="141" x2="570" y2="141" class="k0" stroke-width="2.4"/><line x1="350" y1="179" x2="570" y2="179" class="k0" stroke-width="2.4"/>
+    <g class="k0" stroke-width="1.5"><line x1="356" y1="141" x2="363" y2="132"/><line x1="372" y1="141" x2="379" y2="132"/><line x1="388" y1="141" x2="395" y2="132"/><line x1="404" y1="141" x2="411" y2="132"/><line x1="420" y1="141" x2="427" y2="132"/><line x1="436" y1="141" x2="443" y2="132"/><line x1="452" y1="141" x2="459" y2="132"/><line x1="468" y1="141" x2="475" y2="132"/><line x1="484" y1="141" x2="491" y2="132"/><line x1="500" y1="141" x2="507" y2="132"/><line x1="516" y1="141" x2="523" y2="132"/><line x1="532" y1="141" x2="539" y2="132"/><line x1="548" y1="141" x2="555" y2="132"/>
+      <line x1="364" y1="179" x2="357" y2="188"/><line x1="380" y1="179" x2="373" y2="188"/><line x1="396" y1="179" x2="389" y2="188"/><line x1="412" y1="179" x2="405" y2="188"/><line x1="428" y1="179" x2="421" y2="188"/><line x1="444" y1="179" x2="437" y2="188"/><line x1="460" y1="179" x2="453" y2="188"/><line x1="476" y1="179" x2="469" y2="188"/><line x1="492" y1="179" x2="485" y2="188"/><line x1="508" y1="179" x2="501" y2="188"/><line x1="524" y1="179" x2="517" y2="188"/><line x1="540" y1="179" x2="533" y2="188"/><line x1="556" y1="179" x2="549" y2="188"/></g>
+    <!-- piston 3 -->
+    <rect x="395" y="144" width="72" height="32" rx="3" class="soft3 k3" stroke-width="2.6"/>
+    <!-- manivelle 1, bielle 2 -->
+    <line x1="150" y1="160" x2="195" y2="106" class="k1" stroke-width="5" stroke-linecap="round"/>
+    <line x1="195" y1="106" x2="431" y2="160" class="k2" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="150" cy="160" r="8" class="piv"/><circle cx="195" cy="106" r="8" class="piv"/><circle cx="431" cy="160" r="8" class="piv"/>
+    <text x="124" y="156" class="lbl t0">A</text><text x="186" y="92" class="lbl t0">B</text><text x="444" y="166" class="lbl t3">C</text>
+    <text x="96" y="122" class="cap t1" font-weight="700">1 manivelle</text>
+    <text x="270" y="112" class="cap t2" font-weight="700">2 bielle</text>
+    <text x="400" y="118" class="cap t3" font-weight="700">3 piston</text>
+    <text x="578" y="164" class="cap t0" font-weight="700">0 bâti</text>
+    <text x="130" y="222" class="cap t0" font-weight="700">0 bâti</text>
+    <text x="196" y="250" class="cap tm">Liaisons pivot en A (0/1), B (1/2), C (2/3) · glissière 3/0</text>
+  </svg></div>
+  <div class="legend"><span><i style="background:var(--k0)"></i>0 bâti (fixe)</span><span><i style="background:var(--k1)"></i>1 manivelle</span><span><i style="background:var(--k2)"></i>2 bielle</span><span><i style="background:var(--k3)"></i>3 piston</span></div>
+  <p class="fig-cap">Compresseur à piston : la manivelle 1 tourne autour de A, le piston 3 coulisse dans le cylindre lié au bâti 0.</p>
+</div>
+
+<div data-fig="T2">
+  <div class="fig"><svg viewBox="0 0 760 260" role="img" aria-label="Trois mécanismes : vérin, plateau élévateur, disque en rotation">
+    <text x="16" y="28" class="ttl">a) Vérin</text>
+    <rect x="30" y="92" width="122" height="58" rx="3" fill="none" class="k0" stroke-width="2.4"/>
+    <line x1="22" y1="150" x2="160" y2="150" class="k0" stroke-width="2.4"/>
+    <g class="k0" stroke-width="1.5"><line x1="28" y1="150" x2="21" y2="159"/><line x1="44" y1="150" x2="37" y2="159"/><line x1="60" y1="150" x2="53" y2="159"/><line x1="76" y1="150" x2="69" y2="159"/><line x1="92" y1="150" x2="85" y2="159"/><line x1="108" y1="150" x2="101" y2="159"/><line x1="124" y1="150" x2="117" y2="159"/><line x1="140" y1="150" x2="133" y2="159"/><line x1="156" y1="150" x2="149" y2="159"/></g>
+    <rect x="112" y="96" width="14" height="50" class="soft3 k3" stroke-width="2.2"/>
+    <rect x="126" y="114" width="108" height="14" class="soft3 k3" stroke-width="2.2"/>
+    <circle cx="170" cy="121" r="4.5" class="t0"/><circle cx="220" cy="121" r="4.5" class="t0"/>
+    <text x="164" y="108" class="lbl t0">P</text><text x="214" y="108" class="lbl t0">Q</text>
+    <text x="34" y="82" class="cap t0" font-weight="700">1 corps (fixe)</text>
+    <text x="150" y="150" class="cap t3" font-weight="700" dy="22">2 tige</text>
+
+    <text x="266" y="28" class="ttl">b) Plateau élévateur</text>
+    <line x1="282" y1="214" x2="442" y2="214" class="k0" stroke-width="2.4"/>
+    <g class="k0" stroke-width="1.5"><line x1="288" y1="214" x2="281" y2="223"/><line x1="304" y1="214" x2="297" y2="223"/><line x1="320" y1="214" x2="313" y2="223"/><line x1="336" y1="214" x2="329" y2="223"/><line x1="352" y1="214" x2="345" y2="223"/><line x1="368" y1="214" x2="361" y2="223"/><line x1="384" y1="214" x2="377" y2="223"/><line x1="400" y1="214" x2="393" y2="223"/><line x1="416" y1="214" x2="409" y2="223"/><line x1="432" y1="214" x2="425" y2="223"/><line x1="448" y1="214" x2="441" y2="223"/></g>
+    <path d="M305 200 L295 214 M305 200 L315 214 M415 200 L405 214 M415 200 L425 214" class="k0" stroke-width="2" fill="none"/>
+    <line x1="305" y1="200" x2="342" y2="136" class="k1" stroke-width="5" stroke-linecap="round"/>
+    <line x1="415" y1="200" x2="452" y2="136" class="k4" stroke-width="5" stroke-linecap="round"/>
+    <line x1="322" y1="136" x2="474" y2="136" class="k2" stroke-width="5" stroke-linecap="round"/>
+    <rect x="372" y="104" width="54" height="32" class="soft2 k2" stroke-width="2.2"/>
+    <circle cx="305" cy="200" r="7" class="piv"/><circle cx="415" cy="200" r="7" class="piv"/><circle cx="342" cy="136" r="7" class="piv"/><circle cx="452" cy="136" r="7" class="piv"/>
+    <text x="282" y="196" class="lbl t0">O₁</text><text x="426" y="196" class="lbl t0">O₂</text><text x="330" y="126" class="lbl t0">A</text><text x="458" y="126" class="lbl t0">B</text>
+    <text x="290" y="168" class="cap t1" font-weight="700">1</text><text x="444" y="174" class="cap t4" font-weight="700">2</text><text x="434" y="100" class="cap t2" font-weight="700">3 plateau</text>
+    <text x="276" y="246" class="cap tm">O₁A = O₂B et O₁O₂ = AB</text>
+
+    <text x="526" y="28" class="ttl">c) Disque en rotation</text>
+    <circle cx="640" cy="142" r="82" class="soft3 k3" stroke-width="2.6"/>
+    <line x1="640" y1="142" x2="717" y2="114" class="k0 dash" stroke-width="1.4"/>
+    <circle cx="640" cy="142" r="6" class="piv"/>
+    <circle cx="717" cy="114" r="4.5" class="t0"/><circle cx="678.5" cy="128" r="4.5" class="t0"/>
+    <text x="722" y="108" class="lbl t0">A</text><text x="672" y="118" class="lbl t0">B</text><text x="620" y="160" class="lbl t0">O</text>
+    <path d="M592 70 A92 92 0 0 1 688 70" fill="none" class="k1" stroke-width="2"/><path d="M688 70 l-11 -3 l4 9z" class="t1"/>
+    <text x="634" y="44" class="lbl t1">ω</text>
+    <text x="540" y="246" class="cap tm">OB = OA / 2 · axe fixe (O, z)</text>
+  </svg></div>
+  <div class="legend"><span><i style="background:var(--k0)"></i>bâti / corps fixe</span><span><i style="background:var(--k1)"></i>bras 1</span><span><i style="background:var(--k4)"></i>bras 2</span><span><i style="background:var(--k2)"></i>plateau 3</span><span><i style="background:var(--k3)"></i>tige / disque</span></div>
+</div>
+
+<div data-fig="T3">
+  <div class="fig"><svg viewBox="0 0 640 280" role="img" aria-label="Trajectoire d'un point M dans un repère, avec le vecteur position OM">
+    <line x1="60" y1="244" x2="606" y2="244" class="k0" stroke-width="1.6"/><path d="M612 244l-10-5v10z" class="t0"/>
+    <line x1="60" y1="244" x2="60" y2="24" class="k0" stroke-width="1.6"/><path d="M60 18l-5 10h10z" class="t0"/>
+    <text x="598" y="266" class="cap t0">x (m)</text><text x="70" y="26" class="cap t0">y (m)</text><text x="42" y="262" class="lbl t0">O</text>
+    <path d="M110 210 C220 40 400 260 590 90" fill="none" class="k0 dash" stroke-width="2"/>
+    <line x1="60" y1="244" x2="312" y2="153" class="pos" stroke-width="3"/><path d="M320 150 l-14 -1 l5 11z" class="tpos"/>
+    <circle cx="320" cy="150" r="6" class="t0"/>
+    <text x="328" y="142" class="lbl t0">M</text>
+    <text x="165" y="185" class="lbl tpos">OM</text><path d="M165 168 h27" class="pos" stroke-width="1.6"/><path d="M196 168 l-6 -3.5 v7z" class="tpos"/>
+    <text x="456" y="210" class="cap tm">trajectoire T(M ∈ 2/0)</text>
+  </svg></div>
+  <div class="formulas">
+    <span style="color:var(--pos)"><span class="vec">OM</span>(t) = x(t)·<span class="vec">x</span> + y(t)·<span class="vec">y</span> &nbsp;[m]</span>
+    <span style="color:var(--vel)"><span class="vec">V</span>(M ∈ 2/0) = d<span class="vec">OM</span>/dt &nbsp;[m.s⁻¹]</span>
+    <span style="color:var(--acc)"><span class="vec">a</span>(M ∈ 2/0) = d<span class="vec">V</span>/dt &nbsp;[m.s⁻²]</span>
+  </div>
+  <p class="fig-cap">Rappel de notation. Les formules à utiliser dans les calculs ne sont pas toutes rappelées.</p>
+</div>
+</div>
+
+<!-- modales -->
+<div class="modal-bg" id="pw-modal" hidden>
+  <form class="modal" id="pw-form">
+    <div class="row" style="justify-content:space-between"><h3 id="pw-title">Mot de passe</h3><button type="button" class="x-btn" id="pw-x" aria-label="Fermer">×</button></div>
+    <p class="muted" id="pw-sub"></p>
+    <input type="password" id="pw-input" autocomplete="off" aria-label="Mot de passe">
+    <div class="err" id="pw-err" aria-live="polite"></div>
+    <div class="row"><button class="btn primary" type="submit">Valider</button><button class="btn ghost" type="button" id="pw-cancel">Annuler</button></div>
+  </form>
+</div>
+<div class="modal-bg" id="cf-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cf-title">
+    <h3 id="cf-title"></h3><p id="cf-text"></p>
+    <div class="row"><button class="btn primary" type="button" id="cf-ok">Confirmer</button><button class="btn ghost" type="button" id="cf-cancel">Annuler</button></div>
+  </div>
+</div>
+<div class="modal-bg" id="zoom-modal" hidden>
+  <div class="modal wide" role="dialog" aria-modal="true" aria-label="Document agrandi">
+    <div class="row" style="justify-content:space-between"><h3>Document ressource</h3><button type="button" class="x-btn" id="zoom-x" aria-label="Fermer">×</button></div>
+    <div class="zoom-fig" id="zoom-body"></div>
+  </div>
+</div>
+<div class="calc" id="calc" hidden>
+  <div class="calc-head" id="calc-head" title="Glisser pour déplacer · double-clic pour replacer">
+    <span class="grip"><svg viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="4" cy="3" r="1.3"/><circle cx="10" cy="3" r="1.3"/><circle cx="4" cy="7" r="1.3"/><circle cx="10" cy="7" r="1.3"/><circle cx="4" cy="11" r="1.3"/><circle cx="10" cy="11" r="1.3"/></svg>Calculatrice</span>
+    <span class="tools"><button type="button" class="x-btn" id="calc-min" aria-label="Réduire la calculatrice" title="Réduire">–</button><button type="button" class="x-btn" id="calc-x" aria-label="Fermer la calculatrice" title="Fermer">×</button></span></div>
+  <div class="calc-body">
+  <div class="calc-op" id="calc-op"></div>
+  <div class="calc-disp" id="calc-disp">0</div>
+  <div class="calc-keys" id="calc-keys">
+    <button type="button" data-k="C">C</button><button type="button" data-k="back">⌫</button><button type="button" data-k="neg">±</button><button type="button" class="op" data-k="/">÷</button>
+    <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" class="op" data-k="*">×</button>
+    <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" class="op" data-k="-">−</button>
+    <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" class="op" data-k="+">+</button>
+    <button type="button" data-k="0">0</button><button type="button" data-k=".">,</button><button type="button" data-k="pi">π</button><button type="button" class="eq" data-k="=">=</button>
+  </div>
+  <div class="calc-keys" style="grid-template-columns:1fr 1fr"><button type="button" data-k="sq">x²</button><button type="button" data-k="sqrt">√x</button></div>
+  <button class="btn sm" type="button" id="calc-put">Copier dans le champ de réponse</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+// ENGINE-START
+/* ---------- SHA-256 (synchrone, sans dépendance) ---------- */
+const SHA256 = (function(){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  function utf8(s){ if(typeof TextEncoder!=='undefined') return new TextEncoder().encode(s);
+    const o=[]; s=unescape(encodeURIComponent(s)); for(let i=0;i<s.length;i++)o.push(s.charCodeAt(i)); return new Uint8Array(o); }
+  return function(str){
+    const m=utf8(String(str)), l=m.length, nb=((l+9+63)>>6)<<6, b=new Uint8Array(nb);
+    b.set(m); b[l]=0x80; const bits=l*8; const dv=new DataView(b.buffer);
+    dv.setUint32(nb-4,bits>>>0); dv.setUint32(nb-8,Math.floor(bits/4294967296));
+    let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+    const w=new Uint32Array(64);
+    for(let o=0;o<nb;o+=64){
+      for(let i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);
+      for(let i=16;i<64;i++){const a=w[i-15],c=w[i-2];
+        const s0=((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3), s1=((c>>>17)|(c<<15))^((c>>>19)|(c<<13))^(c>>>10);
+        w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;}
+      let a=h0,bb=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+      for(let i=0;i<64;i++){
+        const S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)), ch=(e&f)^(~e&g), t1=(h+S1+ch+K[i]+w[i])>>>0;
+        const S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)), mj=(a&bb)^(a&c)^(bb&c), t2=(S0+mj)>>>0;
+        h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=bb;bb=a;a=(t1+t2)>>>0;}
+      h0=(h0+a)>>>0;h1=(h1+bb)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;h4=(h4+e)>>>0;h5=(h5+f)>>>0;h6=(h6+g)>>>0;h7=(h7+h)>>>0;
+    }
+    return [h0,h1,h2,h3,h4,h5,h6,h7].map(x=>x.toString(16).padStart(8,'0')).join('');
+  };
+})();
+const keyOf = (qid,text) => SHA256(qid+'|'+String(text).normalize('NFC').trim()).slice(0,20);
+
+/* ---------- Générateur pseudo-aléatoire déterministe ---------- */
+function makeRng(str){
+  let a=parseInt(SHA256(str).slice(0,8),16)>>>0;
+  const f=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  return {f,
+    int:(lo,hi)=>lo+Math.floor(f()*(hi-lo+1)),
+    step:(lo,hi,s)=>{const n=Math.round((hi-lo)/s);return Math.round((lo+s*Math.floor(f()*(n+1)))*1000)/1000;},
+    pick:arr=>arr[Math.floor(f()*arr.length)],
+    shuffle:arr=>{const x=arr.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(f()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}};
+}
+const fr=(n,d=3)=>Number(n).toLocaleString('fr-FR',{maximumFractionDigits:d});
+const V=s=>`<span class="vec">${s}</span>`;
+
+/* ---------- Référentiel ---------- */
+const THEMES=[{id:'T1',title:'Mouvements et trajectoires'},{id:'T2',title:'Translation et rotation'},{id:'T3',title:'Vecteur cinématique'}];
+const COMPS={C1:'Trajectoires',C2:'Mouvements relatifs',C3:'Translation',C4:'Rotation',C5:'Vitesse',C6:'Accélération'};
+const COMP_ORDER=['C1','C2','C3','C4','C5','C6'];
+const ADVICE={
+  C1:"Revois la notation T(M ∈ S/R) et les trajectoires types : cercle pour un point d'un solide en rotation autour d'un axe fixe, segment pour un solide en translation rectiligne. Refais le tracé point par point d'un système bielle-manivelle.",
+  C2:"Commence toujours par nommer le solide de référence. Le centre d'une liaison pivot entre 1 et 2 appartient aux deux solides : il est immobile dans le mouvement 2/1 et T(B ∈ 1/0) = T(B ∈ 2/0).",
+  C3:"Un solide est en translation si tout segment du solide reste parallèle à lui-même. Ses points ont alors des trajectoires superposables et le même vecteur vitesse. Distingue translation rectiligne et translation circulaire.",
+  C4:"Mémorise ω = 2π·N/60 et V = R·ω, avec R en mètres. La vitesse d'un point est proportionnelle à sa distance à l'axe.",
+  C5:"Le vecteur vitesse est tangent à la trajectoire et sa norme vaut √(Vx² + Vy²). Pour passer des km.h⁻¹ aux m.s⁻¹, divise par 3,6.",
+  C6:"a = Δv/Δt en m.s⁻². En virage, même à vitesse constante, aₙ = V²/R est dirigée vers le centre. Départ arrêté en MRUV : x = ½·a·t²."
+};
+
+/* ---------- Banque de questions ---------- */
+/* Les bonnes propositions ne figurent pas dans ce fichier : seule leur empreinte SHA-256 est stockée dans KEYS. */
+const BANK=[
+ // T1 · Mouvements et trajectoires
+ {id:'t1q1',theme:'T1',comp:'C2',type:'qcm',
+  prompt:"Pour décrire le mouvement d'un solide, il faut toujours préciser :",
+  choices:["le solide de référence par rapport auquel on observe le mouvement","la masse du solide étudié","la vitesse maximale atteinte par le solide","l'unité de temps utilisée pour la mesure"],
+  hint:"Un mouvement n'existe que « par rapport à » quelque chose.",
+  explain:"Le mouvement est relatif : il faut toujours indiquer le solide de référence (le repère)."},
+ {id:'t1q2',theme:'T1',comp:'C2',type:'qcm',
+  prompt:"La notation T(B ∈ 1/0) se lit :",
+  choices:["trajectoire du point B appartenant au solide 1, dans son mouvement par rapport au solide 0","trajectoire du point B appartenant au solide 0, dans son mouvement par rapport au solide 1","translation du point B entre les solides 1 et 0","trajectoire du solide 1 vers le solide 0"],
+  hint:"Dans « S/R », le solide étudié est écrit avant la barre, le solide de référence après.",
+  explain:"T(B ∈ 1/0) : trajectoire du point B, lié au solide 1, observée depuis le solide 0."},
+ {id:'t1q3',theme:'T1',comp:'C1',type:'qcm',
+  prompt:"Sur le système bielle-manivelle, la trajectoire T(B ∈ 1/0) est :",
+  choices:["un cercle de centre A et de rayon AB","un segment de droite porté par l'axe du cylindre","un cercle de centre C et de rayon CB","une courbe quelconque, ni droite ni cercle"],
+  hint:"Quel est le mouvement de la manivelle 1 par rapport au bâti 0 ?",
+  explain:"La manivelle 1 est en rotation autour de A par rapport au bâti : B décrit un cercle de centre A, de rayon AB."},
+ {id:'t1q4',theme:'T1',comp:'C1',type:'qcm',
+  prompt:"Sur le système bielle-manivelle, la trajectoire T(C ∈ 3/0) est :",
+  choices:["un segment de droite porté par l'axe du cylindre","un cercle de centre A","un arc de cercle de centre B","un point, car C est fixe"],
+  hint:"Quel est le mouvement du piston 3 dans le cylindre lié au bâti ?",
+  explain:"Le piston 3 est en translation rectiligne par rapport au bâti : C décrit un segment de l'axe du cylindre."},
+ {id:'t1q5',theme:'T1',comp:'C2',type:'qcm',
+  prompt:"Le point B est le centre de la liaison pivot entre la manivelle 1 et la bielle 2. On peut donc écrire :",
+  choices:["T(B ∈ 2/0) = T(B ∈ 1/0)","T(B ∈ 2/0) = T(C ∈ 3/0)","T(B ∈ 1/0) est un segment de droite","T(B ∈ 2/0) est un point"],
+  hint:"Le centre d'une liaison pivot appartient aux deux solides qu'elle relie.",
+  explain:"B appartient à la fois à 1 et à 2 : ses trajectoires par rapport à 0 sont identiques (un cercle de centre A)."},
+ {id:'t1q6',theme:'T1',comp:'C2',type:'qcm',
+  prompt:"Quelle est la trajectoire T(B ∈ 2/1) ?",
+  choices:["un point : B ne se déplace pas par rapport à la manivelle 1","un cercle de centre A","un segment de droite","un arc de cercle de centre C"],
+  hint:"Place-toi sur la manivelle 1 : le point B bouge-t-il ?",
+  explain:"B est le centre de la pivot 1/2 : dans le mouvement 2/1, la bielle tourne autour de B, qui reste immobile."},
+ {id:'t1q7',theme:'T1',comp:'C1',type:'qcm',
+  prompt:"Le mouvement de la bielle 2 par rapport au bâti 0 est :",
+  choices:["un mouvement plan quelconque, ni translation ni rotation","une rotation autour de A","une translation rectiligne","une rotation autour de C"],
+  hint:"Compare les trajectoires de B (cercle) et de C (segment), deux points de la bielle.",
+  explain:"B et C, points de la bielle, ont des trajectoires différentes et aucun point de la bielle n'est fixe : mouvement plan quelconque."},
+ {id:'t1q8',theme:'T1',comp:'C1',type:'num',
+  gen:rng=>{const r=rng.step(20,60,5);return{
+   prompt:`La manivelle du compresseur mesure AB = ${r} mm. Quelle est la course du piston, c'est-à-dire la distance entre ses deux positions extrêmes ?`,
+   fields:[{label:'Course',unit:'mm',answer:2*r,tol:0.005}],
+   explain:`Aux deux points morts, A, B et C sont alignés : course = 2 × AB = 2 × ${r} = ${2*r} mm.`};},
+  hint:"Dessine les deux positions où A, B et C sont alignés (points morts)."},
+ {id:'t1q9',theme:'T1',comp:'C2',type:'qcm',
+  prompt:"Un livreur est assis dans un bus qui roule sur la route. Le livreur est :",
+  choices:["immobile par rapport au bus et en mouvement par rapport à la route","en mouvement par rapport au bus et par rapport à la route","immobile par rapport à la route","immobile dans tous les cas, car il est assis"],
+  hint:"Réponds deux fois : depuis le bus, puis depuis le trottoir.",
+  explain:"Le mouvement dépend du référentiel : immobile dans le bus, en mouvement par rapport à la route."},
+
+ // T2 · Translation et rotation
+ {id:'t2q1',theme:'T2',comp:'C3',type:'qcm',
+  prompt:"Un solide est en mouvement de translation lorsque :",
+  choices:["tout segment du solide reste parallèle à lui-même pendant le mouvement","tous ses points décrivent des lignes droites","il tourne autour d'un axe fixe","sa vitesse reste constante"],
+  hint:"Une translation peut être circulaire : la définition ne parle donc pas de lignes droites.",
+  explain:"Définition : tout segment du solide garde la même direction au cours du mouvement."},
+ {id:'t2q2',theme:'T2',comp:'C3',type:'qcm',
+  prompt:"Dans un mouvement de translation, à un instant donné, tous les points du solide ont :",
+  choices:["le même vecteur vitesse","des vitesses proportionnelles à leur distance à un axe","des trajectoires qui sont des cercles concentriques","des vecteurs vitesse perpendiculaires entre eux"],
+  hint:"Sur le vérin (figure a), compare le déplacement de P et de Q pendant une même durée.",
+  explain:"En translation, tous les points ont des trajectoires superposables et le même vecteur vitesse à chaque instant."},
+ {id:'t2q3',theme:'T2',comp:'C3',type:'qcm',
+  prompt:"Sur la figure b), O₁ABO₂ est un parallélogramme. Le mouvement du plateau 3 par rapport au bâti est :",
+  choices:["une translation circulaire","une rotation autour de O₁","une translation rectiligne","un mouvement plan quelconque"],
+  hint:"Le plateau reste-t-il horizontal ? Quelle trajectoire décrit son point A ?",
+  explain:"AB reste parallèle à O₁O₂ : le plateau est en translation, et ses points décrivent des cercles (A autour de O₁) : translation circulaire."},
+ {id:'t2q4',theme:'T2',comp:'C3',type:'num',
+  gen:rng=>{const d=rng.step(150,400,10), t=rng.step(1.5,4,0.5), v=d/t;return{
+   prompt:`Figure a) : la tige 2 du vérin sort de d = ${d} mm en t = ${fr(t)} s, à vitesse constante. Calcule la vitesse de la tige par rapport au corps 1, en mm.s⁻¹.`,
+   fields:[{label:'v',unit:'mm.s⁻¹',answer:v,tol:0.01}],
+   explain:`v = d / t = ${d} mm / ${fr(t)} s ≈ ${fr(v,1)} mm.s⁻¹, soit ${fr(v/1000,3)} m.s⁻¹. Tous les points de la tige ont cette vitesse.`};},
+  hint:"Mouvement uniforme : v = d / t."},
+ {id:'t2q5',theme:'T2',comp:'C4',type:'qcm',
+  prompt:"Pour un solide en rotation autour d'un axe fixe, la trajectoire d'un point du solide (hors de l'axe) est :",
+  choices:["un cercle centré sur l'axe de rotation","une droite perpendiculaire à l'axe","une hélice autour de l'axe","un point immobile"],
+  hint:"Observe le point A du disque (figure c) pendant un tour.",
+  explain:"Chaque point reste à distance constante de l'axe fixe : il décrit un cercle centré sur l'axe."},
+ {id:'t2q6',theme:'T2',comp:'C4',type:'num',
+  gen:rng=>{const N=rng.step(600,3000,150), w=2*Math.PI*N/60;return{
+   prompt:`Un moteur tourne à N = ${fr(N)} tr.min⁻¹. Calcule sa vitesse angulaire ω en rad.s⁻¹.`,
+   fields:[{label:'ω',unit:'rad.s⁻¹',answer:w,tol:0.01}],
+   explain:`ω = 2π·N / 60 = 2π × ${fr(N)} / 60 ≈ ${fr(w,2)} rad.s⁻¹.`};},
+  hint:"Un tour = 2π rad et une minute = 60 s."},
+ {id:'t2q7',theme:'T2',comp:'C4',type:'num',
+  gen:rng=>{const D=rng.step(100,400,20), w=rng.int(10,60), Vv=D/2000*w;return{
+   prompt:`Le disque de la figure c) a un diamètre D = ${D} mm et tourne à ω = ${w} rad.s⁻¹. Calcule la vitesse du point A, situé à la périphérie.`,
+   fields:[{label:'V(A)',unit:'m.s⁻¹',answer:Vv,tol:0.01}],
+   explain:`R = D/2 = ${fr(D/2000)} m, donc V = R·ω = ${fr(D/2000)} × ${w} = ${fr(Vv,3)} m.s⁻¹.`};},
+  hint:"V = R·ω, avec R en mètres : attention, on te donne le diamètre."},
+ {id:'t2q8',theme:'T2',comp:'C4',type:'qcm',
+  prompt:"Sur le disque de la figure c), OB = OA / 2. Les vitesses des points A et B vérifient :",
+  choices:["V<sub>B</sub> = V<sub>A</sub> / 2","V<sub>B</sub> = V<sub>A</sub>","V<sub>B</sub> = 2 × V<sub>A</sub>","V<sub>B</sub> = 0"],
+  hint:"Tous les points du disque ont la même vitesse angulaire ω.",
+  explain:"V = R·ω avec le même ω : le rayon est divisé par 2, la vitesse aussi."},
+ {id:'t2q9',theme:'T2',comp:'C4',type:'num',
+  gen:rng=>{const N=rng.step(120,1200,60), t=rng.int(5,30), n=N*t/60;return{
+   prompt:`Une roue tourne à N = ${fr(N)} tr.min⁻¹. Combien de tours effectue-t-elle en t = ${t} s ?`,
+   fields:[{label:'Nombre de tours',unit:'tr',answer:n,tol:0.01}],
+   explain:`${fr(N)} tr.min⁻¹ = ${fr(N/60)} tr.s⁻¹, donc ${fr(N/60)} × ${t} = ${fr(n)} tours.`};},
+  hint:"Convertis d'abord N en tours par seconde."},
+
+ // T3 · Vecteur cinématique
+ {id:'t3q1',theme:'T3',comp:'C5',type:'qcm',
+  prompt:`À chaque instant, le vecteur vitesse ${V('V')}(M ∈ 2/0) est :`,
+  choices:["tangent à la trajectoire au point M, dans le sens du mouvement","perpendiculaire à la trajectoire au point M","dirigé du point M vers l'origine O","toujours horizontal"],
+  hint:"Il indique la direction dans laquelle le point M s'apprête à partir.",
+  explain:`${V('V')} est la dérivée de ${V('OM')} : il est tangent à la trajectoire, orienté dans le sens du mouvement.`},
+ {id:'t3q2',theme:'T3',comp:'C5',type:'qcm',
+  prompt:`La notation ${V('V')}(M ∈ 2/0) désigne :`,
+  choices:["la vitesse du point M appartenant au solide 2, dans son mouvement par rapport au solide 0","la vitesse du solide 0 par rapport au point M du solide 2","la vitesse moyenne de M entre les instants t = 2 s et t = 0 s","la vitesse du point M entre les positions 2 et 0"],
+  hint:"C'est la même lecture que pour la trajectoire T(M ∈ 2/0).",
+  explain:"Point M, lié au solide 2, mouvement observé depuis le solide 0."},
+ {id:'t3q3',theme:'T3',comp:'C5',type:'num',
+  gen:rng=>{const k=rng.step(18,108,9), v=k/3.6;return{
+   prompt:`Une trottinette roule à ${k} km.h⁻¹. Convertis cette vitesse en m.s⁻¹.`,
+   fields:[{label:'v',unit:'m.s⁻¹',answer:v,tol:0.01}],
+   explain:`${k} / 3,6 = ${fr(v,2)} m.s⁻¹.`};},
+  hint:"1 m.s⁻¹ = 3,6 km.h⁻¹."},
+ {id:'t3q4',theme:'T3',comp:'C5',type:'num',
+  gen:rng=>{const tr=rng.pick([[3,4,5],[4,3,5],[6,8,10],[8,6,10],[5,12,13],[12,5,13]]);
+   const sx=rng.pick([1,-1]), sy=rng.pick([1,-1]), vx=sx*tr[0], vy=sy*tr[1];
+   const x1=rng.int(8,14), y1=rng.int(8,14), x2=x1+vx*0.5, y2=y1+vy*0.5;return{
+   prompt:`Entre t₁ = 2 s et t₂ = 2,5 s, un point M passe de M₁(${fr(x1)} ; ${fr(y1)}) à M₂(${fr(x2)} ; ${fr(y2)}), coordonnées en mètres. Calcule les composantes du vecteur vitesse moyenne ${V('V')}, puis sa norme.`,
+   fields:[{label:'V<sub>x</sub>',unit:'m.s⁻¹',answer:vx,tol:0.01},{label:'V<sub>y</sub>',unit:'m.s⁻¹',answer:vy,tol:0.01},{label:`‖${V('V')}‖`,unit:'m.s⁻¹',answer:tr[2],tol:0.01}],
+   explain:`Vx = (${fr(x2)} − ${fr(x1)}) / 0,5 = ${fr(vx)} m.s⁻¹ ; Vy = (${fr(y2)} − ${fr(y1)}) / 0,5 = ${fr(vy)} m.s⁻¹ ; ‖V‖ = √(${fr(vx)}² + ${fr(vy)}²) = ${tr[2]} m.s⁻¹.`};},
+  hint:"Vx = Δx / Δt et Vy = Δy / Δt, puis ‖V‖ = √(Vx² + Vy²). Attention aux signes."},
+ {id:'t3q5',theme:'T3',comp:'C5',type:'qcm',
+  prompt:"Sur la courbe x(t) d'un point en mouvement rectiligne, la pente de la tangente à un instant t donne :",
+  choices:["la vitesse instantanée à cet instant","la position à cet instant","l'accélération à cet instant","la distance totale parcourue depuis le départ"],
+  hint:"v(t) = dx/dt.",
+  explain:"La vitesse est la dérivée de la position : graphiquement, la pente de la tangente à x(t)."},
+ {id:'t3q6',theme:'T3',comp:'C6',type:'qcm',
+  prompt:"Dans le Système international, l'accélération s'exprime en :",
+  choices:["m.s⁻²","m.s⁻¹","km.h⁻¹","rad.s⁻¹"],
+  hint:"C'est une variation de vitesse (m.s⁻¹) par seconde.",
+  explain:"a = Δv/Δt : (m.s⁻¹).s⁻¹ = m.s⁻²."},
+ {id:'t3q7',theme:'T3',comp:'C6',type:'num',
+  gen:rng=>{const v0=rng.int(0,4), v1=v0+rng.int(4,10), t=rng.int(2,8), a=(v1-v0)/t;return{
+   prompt:`En ligne droite, un véhicule passe de ${v0} m.s⁻¹ à ${v1} m.s⁻¹ en ${t} s. Calcule son accélération, supposée constante.`,
+   fields:[{label:'a',unit:'m.s⁻²',answer:a,tol:0.01}],
+   explain:`a = Δv / Δt = (${v1} − ${v0}) / ${t} = ${fr(a,3)} m.s⁻².`};},
+  hint:"a = Δv / Δt."},
+ {id:'t3q8',theme:'T3',comp:'C6',type:'num',
+  gen:rng=>{const v=rng.int(4,15), R=rng.step(10,50,5), an=v*v/R;return{
+   prompt:`Un triporteur aborde un rond-point de rayon R = ${R} m à la vitesse constante V = ${v} m.s⁻¹. Calcule son accélération normale aₙ.`,
+   fields:[{label:'aₙ',unit:'m.s⁻²',answer:an,tol:0.02}],
+   explain:`aₙ = V² / R = ${v*v} / ${R} = ${fr(an,3)} m.s⁻², dirigée vers le centre du rond-point.`};},
+  hint:"aₙ = V² / R."},
+ {id:'t3q9',theme:'T3',comp:'C6',type:'qcm',
+  prompt:"Un véhicule parcourt un virage à vitesse constante (le compteur ne bouge pas). Son accélération est :",
+  choices:["non nulle et dirigée vers le centre du virage","nulle, puisque la valeur de la vitesse ne change pas","non nulle et dirigée vers l'extérieur du virage","non nulle et tangente à la trajectoire"],
+  hint:"La valeur de la vitesse ne change pas, mais sa direction ?",
+  explain:`La direction de ${V('V')} change : aₜ = 0 mais aₙ = V²/R ≠ 0, dirigée vers le centre.`},
+ {id:'t3q10',theme:'T3',comp:'C6',type:'num',
+  gen:rng=>{const a=rng.pick([0.5,1,1.5,2,2.5]), t=rng.int(2,8), x=0.5*a*t*t;return{
+   prompt:`Départ arrêté, un chariot accélère à a = ${fr(a)} m.s⁻² pendant t = ${t} s en ligne droite. Quelle distance parcourt-il ?`,
+   fields:[{label:'x',unit:'m',answer:x,tol:0.01}],
+   explain:`x = ½·a·t² = 0,5 × ${fr(a)} × ${t}² = ${fr(x)} m.`};},
+  hint:"Mouvement uniformément accéléré, départ arrêté : x = ½·a·t²."}
+];
+const KEYS={"t1q1":"52385bdfe66648c5b5c4","t1q2":"8f60c0b8cf9eb0c21f63","t1q3":"271c1841a39c3765833d","t1q4":"a554512f1e92d1478bc7","t1q5":"2429b4a6d345e551d0b6","t1q6":"3a399f2e1abaa3a38e4e","t1q7":"e76ff2a8d8eb94becfc5","t1q9":"8a036cbace8abdfe468c","t2q1":"c2ad3c6105a4abd4102d","t2q2":"edf2cbf915120b810388","t2q3":"67e2e17c51b0270224e4","t2q5":"84626cfdea0d38d1b816","t2q8":"1c5575be0970a47717fa","t3q1":"a5b38ae2939c22cf30b4","t3q2":"3a0829b73dfc45ec9098","t3q5":"2a3c73fd97a93458ddbf","t3q6":"e0b17c6c30d26a65077e","t3q9":"5974f93ef3f72d144b44"};
+
+/* ---------- Construction du sujet ---------- */
+function instantiate(q,seed){
+  const rng=makeRng(seed+'|'+q.id);
+  const base={id:q.id,theme:q.theme,comp:q.comp,type:q.type,hint:q.hint};
+  if(q.type==='qcm') return Object.assign(base,{prompt:q.prompt,choices:rng.shuffle(q.choices),explain:q.explain});
+  const g=q.gen(rng); return Object.assign(base,{prompt:g.prompt,fields:g.fields,explain:g.explain});
+}
+function buildQuiz(seed){
+  const rng=makeRng(seed+'|ordre'), quiz={};
+  THEMES.forEach(t=>{quiz[t.id]=rng.shuffle(BANK.filter(q=>q.theme===t.id)).map(q=>instantiate(q,seed));});
+  return quiz;
+}
+const parseNum=s=>{if(s==null)return NaN;s=String(s).trim().replace(/[\s  ]/g,'').replace(',','.');if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s))return NaN;return Number(s);};
+function numOk(f,val){const x=parseNum(val);if(isNaN(x))return false;return Math.abs(x-f.answer)<=Math.max((f.tol??0.01)*Math.abs(f.answer),1e-6);}
+const isRightChoice=(q,text)=>keyOf(q.id,text)===KEYS[q.id];
+const plain=s=>String(s??'').replace(/<sub>(.*?)<\/sub>/g,'$1').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+function partsOf(q){return q.type==='qcm'?1:q.fields.length;}
+function grade(q,ans){
+  const parts=partsOf(q);
+  if(!ans)return{parts,ok:0,status:'none'};
+  if(ans.nsp)return{parts,ok:0,status:'nsp'};
+  if(q.type==='qcm'){const ok=isRightChoice(q,ans.choice)?1:0;return{parts,ok,status:ok?'ok':'bad'};}
+  const ok=q.fields.filter((f,i)=>numOk(f,(ans.vals||[])[i])).length;
+  return{parts,ok,status:ok===parts?'ok':ok>0?'partial':'bad'};
+}
+function expectedText(q){
+  if(q.type==='qcm'){const c=q.choices.find(c=>isRightChoice(q,c));return plain(c);}
+  return q.fields.map(f=>(q.fields.length>1?plain(f.label)+' = ':'')+fr(f.answer,3)+' '+f.unit).join(' ; ');
+}
+function answerText(q,ans){
+  if(!ans)return'sans réponse';if(ans.nsp)return'Je ne sais pas';
+  if(q.type==='qcm')return plain(ans.choice);
+  return q.fields.map((f,i)=>(q.fields.length>1?plain(f.label)+' = ':'')+(((ans.vals||[])[i]??'')||'—')+' '+f.unit).join(' ; ');
+}
+const level=s=>s>=16?'Très satisfaisant':s>=12?'Bon':s>=8?'Fragile':'Difficultés importantes';
+function formative(r){
+  const lines=[];
+  const lv={ 'Très satisfaisant':"Les notions de cinématique sont bien maîtrisées.",
+    'Bon':"L'essentiel est acquis ; quelques points restent à consolider.",
+    'Fragile':"Les bases sont en place mais plusieurs notions sont encore fragiles.",
+    'Difficultés importantes':"Les notions de base sont à reprendre avec méthode, une compétence à la fois."}[level(r.score)];
+  lines.push(lv);
+  const comps=COMP_ORDER.map(c=>({c,p:r.byComp[c]})).filter(x=>x.p!=null);
+  const best=comps.slice().sort((a,b)=>b.p-a.p)[0], worst=comps.slice().sort((a,b)=>a.p-b.p)[0];
+  if(best&&best.p>=70)lines.push(`Point fort : ${COMPS[best.c]} (${Math.round(best.p)} %).`);
+  if(worst&&worst.p<70)lines.push(`À retravailler en priorité : ${COMPS[worst.c]} (${Math.round(worst.p)} %). ${ADVICE[worst.c]}`);
+  const weak2=comps.filter(x=>x.p<50&&x.c!==(worst&&worst.c)).map(x=>COMPS[x.c]);
+  if(weak2.length)lines.push(`À revoir également : ${weak2.join(', ')}.`);
+  if(r.nsp)lines.push(`${r.nsp} réponse${r.nsp>1?'s':''} « Je ne sais pas » : ce sont les notions à reprendre en premier dans ton cours.`);
+  if(r.hints)lines.push(`${r.hints} indice${r.hints>1?'s':''} utilisé${r.hints>1?'s':''} (−${fr(r.hints*0.5)} pt).`);
+  if(r.exits)lines.push(`${r.exits} sortie${r.exits>1?'s':''} du plein écran (−${fr(r.exits*2)} pts) : reste concentré sur l'évaluation.`);
+  return lines;
+}
+function computeResult(quiz,prog){
+  let ok=0,parts=0,nsp=0;const byT={},byC={},details=[];
+  THEMES.forEach(t=>quiz[t.id].forEach(q=>{
+    const g=grade(q,prog.answers[q.id]);ok+=g.ok;parts+=g.parts;if(g.status==='nsp')nsp++;
+    (byT[q.theme]=byT[q.theme]||{ok:0,parts:0});byT[q.theme].ok+=g.ok;byT[q.theme].parts+=g.parts;
+    (byC[q.comp]=byC[q.comp]||{ok:0,parts:0});byC[q.comp].ok+=g.ok;byC[q.comp].parts+=g.parts;
+    details.push({qid:q.id,theme:q.theme,comp:q.comp,prompt:plain(q.prompt),answer:answerText(q,prog.answers[q.id]),expected:expectedText(q),
+      explain:plain(q.explain),status:g.status,points:g.ok+'/'+g.parts,hint:!!(prog.hints&&prog.hints[q.id])});
+  }));
+  const hints=Object.keys(prog.hints||{}).length, exits=prog.exits||0;
+  const raw=Math.round(ok/parts*2000)/100;
+  const score=Math.max(0,Math.round((raw-0.5*hints-2*exits)*100)/100);
+  const pct=o=>Math.round(o.ok/o.parts*1000)/10;
+  const r={okParts:ok,parts,raw,score,hints,exits,nsp,
+    byTheme:Object.fromEntries(Object.entries(byT).map(([k,v])=>[k,pct(v)])),
+    byComp:Object.fromEntries(Object.entries(byC).map(([k,v])=>[k,pct(v)])),details};
+  r.level=level(score);r.comment=formative(r);
+  return r;
+}
+// ENGINE-END
+
+/* ======================= Interface ======================= */
+const PROF_HASH="ec10f9082522bd4bc9008bd4b00c98fcc6a869013d74e3485de15888a5f835a0";
+const RESET_HASH="8cd12c36b8dada8bbf4456fbeed46c2952cf0a1426ad4474da24b041d17154c6";
+const ROSTER=([["ABDOU Naimou","T02EG"],["ABDOU BACAR Nassufati","T03EG"],["ABDOURAHMANE Djahiya","T02EG"],["ALADINE Abdourahmane","T13EG"],["ALI Sonia","T11EG"],["ALI MADI Irham","T13EG"],["AMBOUDI Fadel","T13EG"],["ANDRIAVAHINY DIEUDONNE Colberte Mouirah","T02EG"],["HAROUNA Houssine","T03EG"],["HASSANE Mayra","T05EG"],["MAHAMOUD Laikine","T01EG"],["MCOLO Luciano","T03EG"],["MKAVAVO Izdini","T03EG"],["MOHAMED Abdillah","T05EG"],["NASSUR Fanamana Djeyss Anil","T02EG"],["OUSSENI Halima","T13EG"],["SAID Yoan","T10EG"],["SAÏD Stahamile","T03EG"],["SAINDOU Ravine","T09EG"],["SALIM HOUMADI ABDALLAH Sanardou","T02EG"]]).map(([full,classe])=>{
+  const w=full.split(/\s+/);let i=0;while(i<w.length-1&&w[i]===w[i].toUpperCase()&&/\p{L}/u.test(w[i]))i++;
+  const nom=w.slice(0,i).join(' '),prenom=w.slice(i).join(' ');
+  return{nom,prenom,classe,id:(nom+'_'+prenom).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_')};
+});
+const LS_KEY='eval-cinematique-tsi-v1';
+const DURATION=60*60;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+const today=()=>{const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');};
+
+let STORE=loadStore();
+function loadStore(){try{const r=localStorage.getItem(LS_KEY);if(r){const o=JSON.parse(r);return{progress:o.progress||{},results:o.results||{},attempts:o.attempts||{},current:o.current||null};}}catch(e){}return{progress:{},results:{},attempts:{},current:null};}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(STORE));}catch(e){}}
+
+let student=null, prog=null, QUIZ=null, curTheme='T1', uiIdx={}, examActive=false, cloudResults=[];
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3200);}
+function show(id){$$('main>.screen').forEach(s=>s.hidden=s.id!==id);window.scrollTo(0,0);
+  const exam=id==='scr-exam';$('#exam-info').hidden=!exam;$('#btn-calc').hidden=!exam;if(!exam)$('#calc').hidden=true;}
+
+/* ---------- Capacités claude.ai (facultatives) ---------- */
+let DL=null,DB=null,USER=null,UID=null,CAN_ADMIN=false;
+if(window.claude&&typeof window.claude.use==='function'){
+  window.claude.use('downloads').then(x=>{DL=x;}).catch(()=>{});
+  Promise.all([window.claude.use('db'),window.claude.use('user')]).then(async([d,u])=>{
+    DB=d;USER=u;
+    if(DB&&USER){try{UID=await USER.id();}catch(e){} try{CAN_ADMIN=!!(await USER.canEdit());}catch(e){}}
+    syncPending();
+  }).catch(()=>{});
+}
+const inClaude=!!(window.claude&&typeof window.claude.use==='function');
+async function saveFile(name,text,mime){
+  // sur claude.ai : capacité « downloads » (demandée au moment du clic si elle n'a pas encore répondu)
+  if(inClaude){
+    if(!DL){try{DL=await window.claude.use('downloads');}catch(e){DL=null;}}
+    if(DL){try{await DL.save({filename:name,data:text});toast('Fichier enregistré : '+name);return true;}
+      catch(e){if(e&&e.code==='declined'){toast('Téléchargement annulé');return false;}if(e&&e.code==='rate_limited'){toast('Une demande est déjà ouverte');return false;}}}
+    toast('Téléchargement indisponible sur cette page : vérifie l\'autorisation « Téléchargements » de la page.');
+    return false; // les liens de téléchargement sont bloqués dans claude.ai : l'appelant propose la copie
+  }
+  // fichier ouvert seul dans un navigateur : téléchargement natif
+  try{const blob=new Blob([text],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('Téléchargement lancé : '+name);return true;}
+  catch(e){toast('Le téléchargement est bloqué sur ce poste.');return false;}
+}
+async function copyText(text,area){
+  try{await navigator.clipboard.writeText(text);toast('Résultat copié : colle-le dans un fichier ou un message pour ton professeur.');return true;}
+  catch(e){if(area){area.hidden=false;area.focus();area.select();}toast('Copie automatique impossible : le texte est sélectionné, fais Ctrl+C.');return false;}
+}
+const safeId=s=>String(s).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,120);
+async function pushResult(r){
+  if(!DB||!UID)return false;
+  try{const id=safeId(r.id);await DB.doc(`resultats/${UID}/copies/${id}`).set(JSON.parse(JSON.stringify(r)));
+    const p=DB.doc(`resultats/${UID}`);const s=await p.get();const ids=new Set((s.exists&&Array.isArray(s.data().copies))?s.data().copies:[]);ids.add(id);
+    await p.set({copies:[...ids],updatedAt:new Date().toISOString()});
+    if(STORE.results[r.id]){STORE.results[r.id].synced=true;save();}return true;}catch(e){return false;}
+}
+async function syncPending(){if(!DB||!UID)return;for(const r of Object.values(STORE.results)){if(r.source==='local'&&!r.synced)await pushResult(r);}}
+async function pullCloud(){
+  if(!DB)return[];const out=[];
+  try{const snap=await DB.collection('resultats').get();
+    for(const d of snap.docs){const cs=await DB.doc('resultats/'+d.id).collection('copies').get();
+      cs.docs.forEach(c=>{const x=cleanResult(c.data());if(x){x.source='cloud';x.cloudPath='resultats/'+d.id+'/copies/'+c.id;out.push(x);}});}}catch(e){}
+  return out;
+}
+async function clearCloud(){
+  if(!DB)return;try{const snap=await DB.collection('resultats').get();
+    for(const d of snap.docs){const cs=await DB.doc('resultats/'+d.id).collection('copies').get();for(const c of cs.docs)await DB.doc('resultats/'+d.id+'/copies/'+c.id).delete();await DB.doc('resultats/'+d.id).delete();}}catch(e){}
+}
+
+/* ---------- Mots de passe et confirmations ---------- */
+function askPassword(title,sub,hash){
+  return new Promise(res=>{
+    const m=$('#pw-modal');$('#pw-title').textContent=title;$('#pw-sub').textContent=sub;$('#pw-err').textContent='';$('#pw-input').value='';m.hidden=false;setTimeout(()=>$('#pw-input').focus(),30);
+    const done=v=>{m.hidden=true;$('#pw-form').onsubmit=null;$('#pw-cancel').onclick=null;$('#pw-x').onclick=null;res(v);};
+    $('#pw-form').onsubmit=e=>{e.preventDefault();if(SHA256($('#pw-input').value)===hash)done(true);else{$('#pw-err').textContent='Mot de passe incorrect.';$('#pw-input').select();}};
+    $('#pw-cancel').onclick=()=>done(false);$('#pw-x').onclick=()=>done(false);
+  });
+}
+function confirmBox(title,text,ok='Confirmer'){
+  return new Promise(res=>{const m=$('#cf-modal');$('#cf-title').textContent=title;$('#cf-text').textContent=text;$('#cf-ok').textContent=ok;m.hidden=false;$('#cf-ok').focus();
+    const done=v=>{m.hidden=true;res(v);};$('#cf-ok').onclick=()=>done(true);$('#cf-cancel').onclick=()=>done(false);});
+}
+
+/* ---------- Identification ---------- */
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+let acItems=[],acSel=-1;
+function searchRoster(q){q=norm(q).trim();if(q.length<3)return null;
+  return ROSTER.filter(s=>{const words=norm(s.nom+' '+s.prenom).split(/[\s-]+/);return words.some(w=>w.startsWith(q))||norm(s.nom).startsWith(q)||norm(s.prenom).startsWith(q)||norm(s.nom+' '+s.prenom).startsWith(q)||norm(s.prenom+' '+s.nom).startsWith(q);});}
+function renderAc(){
+  const box=$('#ac'),res=searchRoster($('#who').value);
+  if(res===null){box.hidden=true;$('#who').setAttribute('aria-expanded','false');return;}
+  acItems=res.slice(0,8);acSel=acItems.length?0:-1;box.hidden=false;$('#who').setAttribute('aria-expanded','true');
+  box.innerHTML=acItems.length?acItems.map((s,i)=>`<button type="button" role="option" data-i="${i}" aria-selected="${i===acSel}"><b>${esc(s.nom)}</b> ${esc(s.prenom)}<span class="cl">${esc(s.classe)}</span></button>`).join(''):'<div class="none">Aucun élève trouvé. Vérifie l\'orthographe.</div>';
+}
+$('#who').addEventListener('input',renderAc);
+$('#who').addEventListener('keydown',e=>{
+  if($('#ac').hidden||!acItems.length)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();acSel=(acSel+(e.key==='ArrowDown'?1:-1)+acItems.length)%acItems.length;$$('#ac button').forEach((b,i)=>b.setAttribute('aria-selected',String(i===acSel)));}
+  else if(e.key==='Enter'){e.preventDefault();pick(acItems[acSel]);}
+  else if(e.key==='Escape'){$('#ac').hidden=true;}
+});
+$('#ac').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)pick(acItems[+b.dataset.i]);});
+function lastResultOf(sid){return Object.values(STORE.results).filter(r=>r.sid===sid&&r.source==='local').sort((a,b)=>b.date.localeCompare(a.date))[0];}
+function pick(s){
+  $('#ac').hidden=true;$('#who').value=s.nom+' '+s.prenom;student=s;
+  const p=STORE.progress[s.id], done=p&&p.finished;
+  let html=`<div class="picked"><span class="eyebrow">Élève sélectionné</span><span class="name">${esc(s.nom)} ${esc(s.prenom)} <span class="muted mono" style="font-size:.9rem">(${esc(s.classe)})</span></span>`;
+  if(done) html+=`<p class="status-note">Tu as déjà rendu ta copie.</p><div class="row"><button class="btn primary" type="button" id="pk-bilan">Voir mon bilan</button><button class="btn warn" type="button" id="pk-reset">Recommencer (mot de passe)</button></div>`;
+  else if(p) html+=`<p class="status-note">Évaluation commencée : ${countTreated(p)} question${countTreated(p)>1?'s':''} traitée${countTreated(p)>1?'s':''}. Tu reprends où tu t'étais arrêté.</p><div class="row"><button class="btn primary" type="button" id="pk-go">Reprendre l'évaluation</button></div>`;
+  else html+=`<div class="row"><button class="btn primary" type="button" id="pk-go">C'est moi : lire les consignes</button></div>`;
+  html+=`<button class="btn ghost sm" type="button" id="pk-other" style="align-self:flex-start">Ce n'est pas moi</button></div>`;
+  $('#picked').innerHTML=html;
+  $('#pk-other').onclick=()=>{student=null;$('#picked').innerHTML='';$('#who').value='';$('#who').focus();};
+  if($('#pk-go'))$('#pk-go').onclick=()=>openRules();
+  if($('#pk-bilan'))$('#pk-bilan').onclick=()=>{const r=STORE.results[p.resultId]||lastResultOf(s.id);if(r)showBilan(r);};
+  if($('#pk-reset'))$('#pk-reset').onclick=()=>resetStudent(s);
+}
+const countTreated=p=>Object.keys(p.answers||{}).length;
+async function resetStudent(s){
+  const ok=await askPassword('Recommencer l\'évaluation',`Mot de passe de réinitialisation pour ${s.nom} ${s.prenom}. Le résultat précédent reste dans l'espace enseignant.`,RESET_HASH);
+  if(!ok)return;delete STORE.progress[s.id];STORE.attempts[s.id]=(STORE.attempts[s.id]||0)+1;save();toast('Évaluation réinitialisée');student=s;openRules();
+}
+
+/* ---------- Consignes ---------- */
+let rulesTimer=null;
+function openRules(){
+  const p=STORE.progress[student.id];
+  $('#rules-who').textContent=`${student.nom} ${student.prenom} · ${student.classe}`;
+  show('scr-rules');clearInterval(rulesTimer);const b=$('#btn-begin');
+  if(p&&p.rulesRead){b.disabled=false;b.textContent='Reprendre l\'évaluation';return;}
+  let left=60;b.disabled=true;b.textContent=`Lisez les consignes… (${left} s)`;
+  rulesTimer=setInterval(()=>{left--;if(left<=0){clearInterval(rulesTimer);b.disabled=false;b.textContent='Commencer l\'évaluation';}else b.textContent=`Lisez les consignes… (${left} s)`;},1000);
+}
+$('#btn-rules-back').onclick=()=>{clearInterval(rulesTimer);student=null;$('#picked').innerHTML='';$('#who').value='';show('scr-login');};
+$('#btn-begin').onclick=()=>{
+  if(!STORE.progress[student.id]){const att=STORE.attempts[student.id]||0;
+    STORE.progress[student.id]={sid:student.id,seed:`${student.id}|${today()}|${att}`,startedAt:new Date().toISOString(),answers:{},hints:{},exits:0,elapsed:0,rulesRead:true,finished:false};}
+  STORE.current=student.id;save();startExam();
+};
+
+/* ---------- Plein écran et pénalités ---------- */
+let fsActive=false,suppressUntil=0,lastPen=0;
+function enterFs(){const el=document.documentElement,f=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(!f||document.fullscreenElement)return;try{const r=f.call(el);if(r&&r.then)r.then(()=>{fsActive=true;hideAlert();}).catch(()=>{});}catch(e){}}
+function exitFs(){suppressUntil=Date.now()+3000;fsActive=false;if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}
+function penalize(kind){
+  if(!examActive||!prog||prog.finished||Date.now()<suppressUntil)return;
+  if(Date.now()-lastPen<2500)return;lastPen=Date.now();
+  prog.exits=(prog.exits||0)+1;save();renderInfo();
+  $('#alert-txt').textContent=(kind==='fs'?`Sortie du plein écran (tentative n° ${prog.exits})`:`Changement d'onglet ou de fenêtre (tentative n° ${prog.exits})`)+` : −2 pts sur la note finale.`;
+  $('#alert').hidden=false;
+}
+function hideAlert(){$('#alert').hidden=true;}
+document.addEventListener('fullscreenchange',()=>{if(document.fullscreenElement){fsActive=true;hideAlert();}else if(fsActive){fsActive=false;penalize('fs');}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)penalize('hidden');});
+$('#alert-fs').onclick=()=>{enterFs();hideAlert();};
+
+/* ---------- Examen ---------- */
+let tick=null;
+function startExam(){
+  prog=STORE.progress[student.id];QUIZ=buildQuiz(prog.seed);uiIdx={};
+  curTheme=THEMES.find(t=>firstUntreated(t.id)>=0)?.id||'T1';
+  examActive=true;show('scr-exam');enterFs();renderExam();
+  clearInterval(tick);tick=setInterval(()=>{if(!examActive||document.hidden)return;prog.elapsed=(prog.elapsed||0)+1;renderInfo();if(prog.elapsed%10===0)save();},1000);
+}
+const treated=q=>!!prog.answers[q.id];
+function firstUntreated(t){return QUIZ[t].findIndex(q=>!treated(q));}
+const allDone=()=>THEMES.every(t=>firstUntreated(t.id)<0);
+function renderInfo(){
+  if(!prog)return;$('#i-who').textContent=`${student.nom} ${student.prenom}`;
+  const left=DURATION-(prog.elapsed||0),c=$('#i-chrono');c.textContent=left>=0?mmss(left):'+'+mmss(-left);c.classList.toggle('over',left<0);
+  const h=Object.keys(prog.hints).length,x=prog.exits||0;const pe=$('#i-pen');
+  pe.textContent=`Indices ${h} (−${fr(h*0.5)}) · Sorties ${x} (−${x*2})`;pe.classList.toggle('has',h+x>0);
+}
+function renderExam(){
+  renderInfo();
+  const tot=THEMES.reduce((n,t)=>n+QUIZ[t.id].length,0),done=THEMES.reduce((n,t)=>n+QUIZ[t.id].filter(treated).length,0);
+  $('#g-prog').textContent=`${done} / ${tot} questions traitées`;$('#g-bar').style.width=(done/tot*100)+'%';
+  $('#btn-submit').disabled=!allDone();
+  $('#tabs').innerHTML=THEMES.map((t,i)=>{const n=QUIZ[t.id].length,d=QUIZ[t.id].filter(treated).length;
+    return `<button class="tab ${d===n?'done':''}" role="tab" type="button" data-t="${t.id}" aria-selected="${t.id===curTheme}"><span class="eyebrow">Thème ${i+1}</span><span class="t">${t.title}</span><span class="c">${d} / ${n}${d===n?' · terminé':''}</span>${d===n?'<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7"/></svg>':''}</button>`;}).join('');
+  const fig=$(`#figs [data-fig="${curTheme}"]`);
+  $('#doc').innerHTML=`<div class="doc-head"><span class="eyebrow">Document ressource · ${THEMES.find(t=>t.id===curTheme).title}</span><button class="btn sm ghost" type="button" id="btn-zoom" aria-label="Agrandir le document">🔍+ Agrandir</button></div>`+fig.innerHTML;
+  $('#btn-zoom').onclick=()=>{$('#zoom-body').innerHTML=fig.innerHTML;$('#zoom-modal').hidden=false;};
+  renderQuestion();
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;curTheme=b.dataset.t;renderExam();});
+$('#zoom-x').onclick=()=>$('#zoom-modal').hidden=true;
+$('#zoom-modal').addEventListener('click',e=>{if(e.target.id==='zoom-modal')$('#zoom-modal').hidden=true;});
+
+function renderQuestion(){
+  const qs=QUIZ[curTheme],fu=firstUntreated(curTheme);let i=uiIdx[curTheme];
+  if(i==null||i==='done'&&fu>=0)i=fu<0?'done':fu;uiIdx[curTheme]=i;
+  const maxOpen=fu<0?qs.length-1:fu;
+  const pills=`<div class="pills" aria-label="Questions du thème">${qs.map((q,k)=>{const a=prog.answers[q.id];
+    return `<button type="button" class="pill ${a?(a.nsp?'nsp':'done'):''} ${k===i?'cur':''}" data-k="${k}" ${k>maxOpen?'disabled':''} aria-label="Question ${k+1}${a?' traitée':''}">${a?(a.nsp?'?':'✓'):k+1}</button>`;}).join('')}</div>`;
+  if(i==='done'){
+    const next=THEMES.find(t=>firstUntreated(t.id)>=0);
+    $('#qzone').innerHTML=pills+`<div class="card done-card"><span class="big">Thème terminé</span><p>Les ${qs.length} questions de ce thème sont traitées. Les pastilles permettent de revoir une réponse.</p>
+      ${next?`<button class="btn primary" type="button" data-goto="${next.id}">Passer au thème « ${next.title} »</button>`:`<button class="btn primary" type="button" id="btn-submit2">Valider et voir mon bilan</button>`}</div>`;
+    bindPills();const g=$('[data-goto]');if(g)g.onclick=()=>{curTheme=g.dataset.goto;renderExam();};
+    if($('#btn-submit2'))$('#btn-submit2').onclick=submitExam;return;
+  }
+  const q=qs[i],a=prog.answers[q.id],hinted=prog.hints[q.id];
+  let body='';
+  if(q.type==='qcm') body=`<div class="choices" role="radiogroup" aria-label="Propositions">${q.choices.map((c,j)=>`<button type="button" class="choice" role="radio" data-j="${j}" aria-checked="${a&&!a.nsp&&a.choice===c}"><span class="l">${'ABCD'[j]}</span><span>${c}</span></button>`).join('')}</div>`;
+  else body=`<div class="fields">${q.fields.map((f,j)=>`<div class="field-row"><label for="f-${q.id}-${j}">${f.label}</label><input id="f-${q.id}-${j}" type="text" inputmode="decimal" autocomplete="off" value="${a&&!a.nsp&&a.vals?esc(a.vals[j]??''):''}"><span class="u">${f.unit}</span></div>`).join('')}</div>`;
+  $('#qzone').innerHTML=pills+`<article class="card qcard">
+    <div class="q-meta"><span class="comp">${COMPS[q.comp]}</span><span class="mono muted">Question ${i+1} / ${qs.length}</span></div>
+    <div class="q-prompt">${q.prompt}</div>${body}
+    ${hinted?`<div class="hint"><b>Indice (−0,5 pt) :</b> ${q.hint}</div>`:''}
+    ${a?`<span class="saved ${a.nsp?'nsp':''}">${a.nsp?'Réponse enregistrée : « Je ne sais pas ». Tu peux encore la modifier.':'Réponse enregistrée. Tu peux encore la modifier avant de rendre ta copie.'}</span>`:''}
+    <div class="q-actions">
+      <button class="btn primary" type="button" id="q-ok" disabled>Valider ma réponse</button>
+      <button class="btn ghost" type="button" id="q-nsp">Je ne sais pas</button><span class="sp"></span>
+      ${q.type==='num'?'<button class="btn ghost sm" type="button" id="q-calc">Calculatrice</button>':''}
+      ${hinted?'':'<button class="btn warn sm" type="button" id="q-hint">💡 Afficher un indice (−0,5 pt sur le score final)</button>'}
+    </div></article>`;
+  bindPills();
+  const okBtn=$('#q-ok');
+  const refresh=()=>{if(q.type==='qcm')okBtn.disabled=!$('.choice[aria-checked="true"]');else okBtn.disabled=!$$('.fields input').every(x=>!isNaN(parseNum(x.value)));};
+  if(q.type==='qcm')$$('.choice').forEach(b=>b.onclick=()=>{$$('.choice').forEach(x=>x.setAttribute('aria-checked','false'));b.setAttribute('aria-checked','true');refresh();});
+  else $$('.fields input').forEach(x=>{x.addEventListener('input',refresh);x.addEventListener('focus',()=>lastField=x);x.addEventListener('keydown',e=>{if(e.key==='Enter'&&!okBtn.disabled)okBtn.click();});});
+  refresh();if(a&&!a.nsp)okBtn.textContent='Enregistrer la modification';
+  okBtn.onclick=()=>{
+    if(q.type==='qcm'){const b=$('.choice[aria-checked="true"]');prog.answers[q.id]={choice:q.choices[+b.dataset.j]};}
+    else prog.answers[q.id]={vals:$$('.fields input').map(x=>x.value.trim())};
+    afterAnswer(i);
+  };
+  $('#q-nsp').onclick=()=>{prog.answers[q.id]={nsp:true};afterAnswer(i);};
+  if($('#q-calc'))$('#q-calc').onclick=()=>{$('#calc').hidden=false;lastField=lastField&&document.body.contains(lastField)?lastField:$('.fields input');};
+  if($('#q-hint')){let armed=false;$('#q-hint').onclick=e=>{
+    if(!armed){armed=true;e.currentTarget.textContent='Confirmer : afficher l\'indice (−0,5 pt)';setTimeout(()=>{armed=false;const h=$('#q-hint');if(h)h.textContent='💡 Afficher un indice (−0,5 pt sur le score final)';},4000);return;}
+    prog.hints[q.id]=true;save();renderInfo();renderQuestion();};}
+}
+function bindPills(){$$('.pill').forEach(p=>p.onclick=()=>{uiIdx[curTheme]=+p.dataset.k;renderQuestion();});}
+function afterAnswer(i){
+  save();const fu=firstUntreated(curTheme);
+  uiIdx[curTheme]=fu<0?'done':fu;
+  renderExam();$('#qzone').scrollIntoView({block:'nearest'});
+}
+$('#btn-submit').onclick=submitExam;
+async function submitExam(){
+  if(!allDone())return;
+  const ok=await confirmBox('Rendre ta copie ?','Après validation, tu ne pourras plus modifier tes réponses. Ton bilan s\'affichera aussitôt.','Rendre ma copie');
+  if(!ok)return;
+  examActive=false;clearInterval(tick);exitFs();hideAlert();
+  const r=computeResult(QUIZ,prog);
+  Object.assign(r,{id:`${student.id}_${prog.startedAt.replace(/[^0-9]/g,'').slice(0,14)}`,sid:student.id,nom:student.nom,prenom:student.prenom,classe:student.classe,
+    date:new Date().toISOString(),startedAt:prog.startedAt,seed:prog.seed,timeSec:prog.elapsed||0,version:1,source:'local',synced:false});
+  STORE.results[r.id]=r;prog.finished=true;prog.resultId=r.id;STORE.current=null;save();
+  pushResult(r);showBilan(r);
+}
+
+/* ---------- Calculatrice (sans eval) ---------- */
+let lastField=null;const C={cur:'0',acc:null,op:null,fresh:true};
+const calcFmt=n=>{if(!isFinite(n))return'Erreur';const s=Math.round(n*1e10)/1e10;return String(s);};
+function calcShow(){$('#calc-disp').textContent=C.cur.replace('.',',');$('#calc-op').textContent=C.acc!=null&&C.op?calcFmt(C.acc).replace('.',',')+' '+({'+':'+','-':'−','*':'×','/':'÷'}[C.op]):'';}
+function calcDo(a,b,op){return op==='+'?a+b:op==='-'?a-b:op==='*'?a*b:b===0?NaN:a/b;}
+$('#calc-keys').parentElement.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-k]');if(!b)return;const k=b.dataset.k;
+  if(/^[0-9]$/.test(k)){C.cur=C.fresh||C.cur==='0'||C.cur==='Erreur'?k:C.cur+k;C.fresh=false;}
+  else if(k==='.'){if(C.fresh||C.cur==='Erreur'){C.cur='0.';C.fresh=false;}else if(!C.cur.includes('.'))C.cur+='.';}
+  else if(k==='C'){C.cur='0';C.acc=null;C.op=null;C.fresh=true;}
+  else if(k==='back'){C.cur=C.cur.length>1&&!C.fresh?C.cur.slice(0,-1):'0';if(C.cur==='-')C.cur='0';}
+  else if(k==='neg'){if(C.cur!=='0')C.cur=C.cur.startsWith('-')?C.cur.slice(1):'-'+C.cur;}
+  else if(k==='pi'){C.cur=calcFmt(Math.PI);C.fresh=false;}
+  else if(k==='sq'){C.cur=calcFmt(Number(C.cur)**2);C.fresh=true;}
+  else if(k==='sqrt'){C.cur=calcFmt(Math.sqrt(Number(C.cur)));C.fresh=true;}
+  else if('+-*/'.includes(k)){if(C.acc!=null&&C.op&&!C.fresh){C.acc=calcDo(C.acc,Number(C.cur),C.op);C.cur=calcFmt(C.acc);}else C.acc=Number(C.cur);C.op=k;C.fresh=true;}
+  else if(k==='='){if(C.acc!=null&&C.op){C.cur=calcFmt(calcDo(C.acc,Number(C.cur),C.op));C.acc=null;C.op=null;C.fresh=true;}}
+  calcShow();
+});
+$('#calc-x').onclick=()=>$('#calc').hidden=true;
+$('#btn-calc').onclick=()=>{const c=$('#calc');c.hidden=!c.hidden;if(!c.hidden)calcClamp();};
+/* fenêtre flottante : déplacement à la souris ou au doigt, position mémorisée */
+const CALC_POS_KEY=LS_KEY+'-calcpos';
+function calcPlace(x,y){const c=$('#calc');c.style.left=x+'px';c.style.top=y+'px';c.style.right='auto';c.style.bottom='auto';}
+function calcClamp(){const c=$('#calc');if(c.hidden||!c.style.left)return;const r=c.getBoundingClientRect(),m=8;
+  calcPlace(Math.min(Math.max(m,r.left),window.innerWidth-r.width-m),Math.min(Math.max(m,r.top),window.innerHeight-Math.min(r.height,48)-m));}
+function calcReset(){const c=$('#calc');c.style.left=c.style.top=c.style.right=c.style.bottom='';try{localStorage.removeItem(CALC_POS_KEY);}catch(e){}}
+try{const p=JSON.parse(localStorage.getItem(CALC_POS_KEY)||'null');if(p&&isFinite(p.x)&&isFinite(p.y))calcPlace(p.x,p.y);}catch(e){}
+(function(){
+  const head=$('#calc-head'),c=$('#calc');let drag=null;
+  head.addEventListener('pointerdown',e=>{if(e.target.closest('button')||e.button>0)return;const r=c.getBoundingClientRect();
+    drag={dx:e.clientX-r.left,dy:e.clientY-r.top,id:e.pointerId};head.setPointerCapture(e.pointerId);c.classList.add('dragging');e.preventDefault();});
+  head.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const r=c.getBoundingClientRect(),m=8;
+    calcPlace(Math.min(Math.max(m,e.clientX-drag.dx),window.innerWidth-r.width-m),Math.min(Math.max(m,e.clientY-drag.dy),window.innerHeight-48));});
+  const end=e=>{if(!drag)return;drag=null;c.classList.remove('dragging');const r=c.getBoundingClientRect();
+    try{localStorage.setItem(CALC_POS_KEY,JSON.stringify({x:Math.round(r.left),y:Math.round(r.top)}));}catch(err){}};
+  head.addEventListener('pointerup',end);head.addEventListener('pointercancel',end);
+  head.addEventListener('dblclick',e=>{if(!e.target.closest('button'))calcReset();});
+  $('#calc-min').onclick=()=>{const mini=c.classList.toggle('mini');$('#calc-min').textContent=mini?'+':'–';
+    $('#calc-min').setAttribute('aria-label',mini?'Agrandir la calculatrice':'Réduire la calculatrice');$('#calc-min').title=mini?'Agrandir':'Réduire';calcClamp();};
+  window.addEventListener('resize',calcClamp);
+})();
+/* saisie au clavier quand la calculatrice a le focus */
+$('#calc').addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const map={'Enter':'=','Backspace':'back','Escape':'C',',':'.','.':'.','+':'+','-':'-','*':'*','/':'/'};
+  const k=/^[0-9]$/.test(e.key)?e.key:map[e.key];if(!k)return;e.preventDefault();const b=$(`#calc button[data-k="${k}"]`);if(b)b.click();});
+$('#calc-put').onclick=()=>{const f=lastField&&document.body.contains(lastField)?lastField:$('.fields input');if(!f||C.cur==='Erreur'){toast('Aucun champ de réponse à remplir sur cette question.');return;}
+  f.value=C.cur.replace('.',',');f.dispatchEvent(new Event('input'));f.focus();};
+
+/* ---------- Graphiques ---------- */
+function radarSvg(series){
+  const W=540,H=390,cx=270,cy=196,R=128,n=COMP_ORDER.length;
+  const pt=(k,v)=>{const a=-Math.PI/2+k*2*Math.PI/n;return[cx+R*v/100*Math.cos(a),cy+R*v/100*Math.sin(a)];};
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Radar des compétences">`;
+  [25,50,75,100].forEach(v=>{s+=`<polygon class="grid" points="${COMP_ORDER.map((c,k)=>pt(k,v).join(',')).join(' ')}"/>`;});
+  COMP_ORDER.forEach((c,k)=>{const[x,y]=pt(k,100);s+=`<line class="axis" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+    const[lx,ly]=pt(k,120);const anchor=Math.abs(lx-cx)<8?'middle':lx>cx?'start':'end';s+=`<text class="lbl" x="${lx}" y="${ly+4}" text-anchor="${anchor}">${COMPS[c]}</text>`;});
+  [50,100].forEach(v=>{const[x,y]=pt(0,v);s+=`<text class="tick" x="${x+5}" y="${y+3}">${v} %</text>`;});
+  series.forEach(se=>{const pts=COMP_ORDER.map((c,k)=>pt(k,se.values[c]??0));
+    s+=`<polygon class="${se.cls}" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
+    if(se.cls==='s-ind')pts.forEach(p=>{s+=`<circle class="dot-ind" cx="${p[0]}" cy="${p[1]}" r="3.5"/>`;});});
+  return s+'</svg>';
+}
+function barsHtml(values,labels){
+  return `<div class="bars">${Object.keys(labels).map(k=>{const v=values[k]??0;
+    return `<div class="bar-row"><span>${labels[k]}</span><span class="bar-track"><i class="${v<50?'lo':v<70?'mid':''}" style="width:${Math.max(0,Math.min(100,v))}%"></i></span><span class="v">${Math.round(v)} %</span></div>`;}).join('')}</div>`;
+}
+function groupAvg(list){
+  if(!list.length)return null;const avg=(f)=>list.reduce((s,r)=>s+(Number(f(r))||0),0)/list.length;
+  return{n:list.length,score:avg(r=>r.score),raw:avg(r=>r.raw),
+    byTheme:Object.fromEntries(THEMES.map(t=>[t.id,avg(r=>r.byTheme[t.id])])),
+    byComp:Object.fromEntries(COMP_ORDER.map(c=>[c,avg(r=>r.byComp[c])]))};
+}
+
+/* ---------- Bilan ---------- */
+const TLAB=Object.fromEntries(THEMES.map(t=>[t.id,t.title]));
+const STLAB={ok:'Correct',partial:'Partiel',bad:'Incorrect',nsp:'Je ne sais pas',none:'Sans réponse'};
+function bilanHtml(r,group,opts){
+  const pen=r.hints*0.5+r.exits*2;
+  const corr=THEMES.map(t=>{const items=r.details.filter(d=>d.theme===t.id);const okc=items.filter(d=>d.status==='ok').length;
+    return `<details class="corr"><summary>${esc(t.title)}<span class="sc">${Math.round(r.byTheme[t.id]??0)} %</span></summary><div class="corr-list">${items.map((d,k)=>`
+      <div class="corr-item"><span class="eyebrow">Q${k+1} · ${esc(COMPS[d.comp]||'')}${d.hint?' · <span class="hint-used">indice utilisé</span>':''}</span><span class="st ${esc(d.status)}">${STLAB[d.status]||''} · ${esc(d.points)}</span>
+      <p class="p">${esc(d.prompt)}</p>
+      <p class="a" style="grid-column:1/-1">Ta réponse : <b>${esc(d.answer)}</b>${d.status==='ok'?'':` · Réponse attendue : <b>${esc(d.expected)}</b>`}</p>
+      <p class="a" style="grid-column:1/-1">${esc(d.explain)}</p></div>`).join('')}</div></details>`;}).join('');
+  const series=[{cls:'s-ind',values:r.byComp}];if(group&&group.n>=2)series.unshift({cls:'s-grp',values:group.byComp});
+  return `<div class="card bilan-head">
+     <div class="score-big">${fr(r.score,2)}<small> / 20</small></div>
+     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+       <div><h2>${esc(r.nom)} ${esc(r.prenom)}</h2><span class="muted">${esc(r.classe)} · copie rendue le ${new Date(r.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</span></div>
+       <div class="facts">
+         <div><span>Score brut</span><b>${fr(r.raw,2)} / 20</b></div>
+         <div><span>Indices</span><b class="${r.hints?'minus':''}">${r.hints} · −${fr(r.hints*0.5)} pt</b></div>
+         <div><span>Sorties plein écran</span><b class="${r.exits?'minus':''}">${r.exits} · −${r.exits*2} pts</b></div>
+         <div><span>Temps passé</span><b>${mmss(r.timeSec)}</b></div>
+         <div><span>Questions justes</span><b>${r.okParts} / ${r.parts} points de réponse</b></div>
+         <div><span>« Je ne sais pas »</span><b>${r.nsp}</b></div>
+       </div></div></div>
+   <div class="comment"><span class="lvl">${esc(r.level)}</span>${(r.comment||[]).map(l=>`<p>${esc(l)}</p>`).join('')}</div>
+   <div class="card charts">
+     <div><h3>Résultats par thème</h3>${barsHtml(r.byTheme,TLAB)}</div>
+     <div class="radar"><h3>Profil par compétence</h3>${radarSvg(series)}
+       <div class="key"><span><i></i>${esc(r.prenom)}</span>${group&&group.n>=2?`<span><i class="g"></i>Moyenne du groupe (${group.n} copies)</span>`:''}</div>
+       ${group&&group.n>=2?'':'<p class="muted" style="font-size:.85rem;text-align:center">La moyenne du groupe s\'affiche dans l\'espace enseignant.</p>'}</div>
+   </div>
+   <div class="screen" style="gap:10px"><h3>Correction détaillée</h3>${corr}</div>
+   ${opts&&opts.student?`<div class="card export-box" id="export-box">
+     <div><span class="eyebrow">Exporter mon résultat</span><h3>Enregistre ta copie pour ton professeur</h3>
+       <p class="muted">Le fichier <b class="mono">${esc(fileBase(r))}.json</b> contient ta note, tes réponses et ton bilan. Ton professeur l'importe dans l'espace enseignant.</p></div>
+     <div class="row"><button class="btn primary lg" type="button" id="b-json2">⬇ Télécharger mon résultat (JSON)</button><button class="btn" type="button" id="b-copy">Copier le JSON</button></div>
+     <p class="export-msg" id="export-msg" hidden></p>
+     <textarea class="json-area" id="json-area" readonly hidden aria-label="Résultat au format JSON"></textarea></div>`:''}`;
+}
+function allResults(){const m=new Map();Object.values(STORE.results).forEach(r=>m.set(r.id,r));cloudResults.forEach(r=>{if(!m.has(r.id))m.set(r.id,r);});return[...m.values()];}
+function latestPerStudent(list){const m=new Map();list.forEach(r=>{const o=m.get(r.sid);if(!o||r.date>o.date)m.set(r.sid,r);});return[...m.values()];}
+function showBilan(r){
+  examActive=false;clearInterval(tick);
+  const grp=groupAvg(latestPerStudent(allResults()));
+  $('#scr-bilan').innerHTML=`<div class="row" style="justify-content:space-between"><div><span class="eyebrow">Bilan</span><h1 style="font-size:1.8rem">Ton bilan d'évaluation</h1></div>
+    <div class="row"><button class="btn primary" type="button" id="b-json">⬇ Télécharger mon résultat (JSON)</button><button class="btn warn" type="button" id="b-reset">Recommencer (mot de passe)</button><button class="btn ghost" type="button" id="b-home">Retour à l'identification</button></div></div>`+bilanHtml(r,grp,{student:true});
+  show('scr-bilan');
+  const json=JSON.stringify(stripLocal(r),null,2),area=$('#json-area');area.value=json;
+  const exportJson=async()=>{const ok=await saveFile(fileBase(r)+'.json',json,'application/json');
+    if(!ok){const m=$('#export-msg');m.hidden=false;m.textContent='Le téléchargement n\'est pas disponible ici. Utilise « Copier le JSON » puis colle le texte dans un fichier nommé '+fileBase(r)+'.json, ou envoie-le à ton professeur.';area.hidden=false;
+      $('#export-box').scrollIntoView({behavior:'smooth',block:'center'});}};
+  $('#b-json').onclick=exportJson;$('#b-json2').onclick=exportJson;
+  $('#b-copy').onclick=()=>copyText(json,area);
+  $('#b-home').onclick=()=>{student=null;prog=null;$('#picked').innerHTML='';$('#who').value='';show('scr-login');};
+  $('#b-reset').onclick=()=>{const s=ROSTER.find(x=>x.id===r.sid)||{id:r.sid,nom:r.nom,prenom:r.prenom,classe:r.classe};resetStudent(s);};
+}
+const fileBase=r=>safeId(`${r.nom}_${r.prenom}`)+'_eval_cinematique';
+const stripLocal=r=>{const o=Object.assign({},r);delete o.source;delete o.synced;delete o.cloudPath;return o;};
+
+/* ---------- Import / nettoyage ---------- */
+function cleanResult(o){
+  if(!o||typeof o!=='object'||typeof o.id!=='string'||!Array.isArray(o.details))return null;
+  const num=x=>Number.isFinite(Number(x))?Number(x):0,str=x=>String(x??'').slice(0,2000);
+  const obj=(x,keys)=>Object.fromEntries(keys.map(k=>[k,num(x&&x[k])]));
+  return{id:str(o.id),sid:str(o.sid),nom:str(o.nom),prenom:str(o.prenom),classe:str(o.classe),date:str(o.date),startedAt:str(o.startedAt),seed:str(o.seed),
+    score:num(o.score),raw:num(o.raw),hints:num(o.hints),exits:num(o.exits),nsp:num(o.nsp),timeSec:num(o.timeSec),okParts:num(o.okParts),parts:num(o.parts),
+    level:str(o.level),comment:Array.isArray(o.comment)?o.comment.map(str):[],byTheme:obj(o.byTheme,THEMES.map(t=>t.id)),byComp:obj(o.byComp,COMP_ORDER),
+    details:o.details.slice(0,60).map(d=>({qid:str(d.qid),theme:str(d.theme),comp:str(d.comp),prompt:str(d.prompt),answer:str(d.answer),expected:str(d.expected),explain:str(d.explain),
+      status:['ok','partial','bad','nsp','none'].includes(d.status)?d.status:'none',points:str(d.points),hint:!!d.hint})),version:num(o.version)};
+}
+
+/* ---------- Espace enseignant ---------- */
+let tFilter='all',tSel=null,prevScreen='scr-login';
+$('#btn-teacher').onclick=async()=>{
+  if(!$('#scr-teacher').hidden){closeTeacher();return;}
+  const ok=await askPassword('Espace enseignant','Saisis le mot de passe enseignant.',PROF_HASH);if(!ok)return;
+  prevScreen=$$('main>.screen').find(s=>!s.hidden)?.id||'scr-login';
+  show('scr-teacher');renderTeacher();
+  if(DB&&CAN_ADMIN){$('#t-cloud').textContent='Lecture des résultats synchronisés…';cloudResults=await pullCloud();renderTeacher();}
+};
+function closeTeacher(){show(prevScreen);if(prevScreen==='scr-exam'){renderExam();}}
+function renderTeacher(){
+  const all=allResults();const classes=[...new Set(all.map(r=>r.classe))].sort();
+  const list=all.filter(r=>tFilter==='all'||r.classe===tFilter).sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom)||b.date.localeCompare(a.date));
+  const latest=latestPerStudent(list),g=groupAvg(latest);
+  const nLocal=all.filter(r=>r.source==='local').length,nImp=all.filter(r=>r.source==='import').length,nCloud=all.filter(r=>r.source==='cloud').length;
+  const passed=new Set(all.map(r=>r.sid));const missing=ROSTER.filter(s=>(tFilter==='all'||s.classe===tFilter)&&!passed.has(s.id));
+  const sel=tSel&&all.find(r=>r.id===tSel);
+  $('#scr-teacher').innerHTML=`<div class="t-head"><div><span class="eyebrow">Espace enseignant</span><h1 style="font-size:1.8rem">Résultats de l'évaluation</h1>
+      <p class="muted">${all.length} résultat${all.length>1?'s':''} enregistré${all.length>1?'s':''} : ${nLocal} sur ce poste, ${nImp} importé${nImp>1?'s':''}, ${nCloud} synchronisé${nCloud>1?'s':''}. <span id="t-cloud">${DB?(CAN_ADMIN?'':'Synchronisation claude.ai : accès en lecture réservé aux éditeurs.'):'Hors claude.ai : regroupe les copies avec « Importer JSON ».'}</span></p></div>
+    <div class="row"><button class="btn primary sm" type="button" id="t-json">Exporter JSON</button><button class="btn primary sm" type="button" id="t-csv">Exporter CSV</button>
+      <label class="btn sm" for="t-import" style="cursor:pointer">Importer JSON</label><input id="t-import" type="file" accept=".json,application/json" multiple hidden>
+      <button class="btn danger sm" type="button" id="t-clear">Vider les résultats</button><button class="btn ghost sm" type="button" id="t-close">Fermer</button></div></div>
+   <div class="row"><label for="t-class" class="muted">Classe</label><select id="t-class" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"><option value="all">Toutes les classes</option>${classes.map(c=>`<option value="${esc(c)}" ${c===tFilter?'selected':''}>${esc(c)}</option>`).join('')}</select>
+     <span class="muted" style="font-size:.88rem">Moyennes calculées sur la dernière copie de chaque élève.</span></div>
+   <div class="stats"><div class="stat"><span>Élèves évalués</span><b>${latest.length}</b></div><div class="stat"><span>Moyenne /20</span><b>${g?fr(g.score,1):'—'}</b></div>
+     <div class="stat"><span>Note min</span><b>${latest.length?fr(Math.min(...latest.map(r=>r.score)),1):'—'}</b></div><div class="stat"><span>Note max</span><b>${latest.length?fr(Math.max(...latest.map(r=>r.score)),1):'—'}</b></div>
+     <div class="stat"><span>Score brut moyen</span><b>${g?fr(g.raw,1):'—'}</b></div></div>
+   <div class="card charts">
+     <div><h3>Moyenne de réussite par thème</h3>${g?barsHtml(g.byTheme,TLAB):'<p class="muted">Aucun résultat pour l\'instant.</p>'}
+       ${g?`<h3 style="margin-top:8px">Par compétence</h3>${barsHtml(g.byComp,COMPS)}`:''}</div>
+     <div class="radar"><h3>${sel?`${esc(sel.nom)} ${esc(sel.prenom)} face au groupe`:'Profil collectif par compétence'}</h3>
+       ${g?radarSvg(sel?[{cls:'s-grp',values:g.byComp},{cls:'s-ind',values:sel.byComp}]:[{cls:'s-ind',values:g.byComp}]):'<p class="muted">Le radar apparaît dès le premier résultat.</p>'}
+       ${g?`<div class="key">${sel?`<span><i></i>${esc(sel.prenom)}</span><span><i class="g"></i>Moyenne du groupe</span>`:'<span><i></i>Moyenne du groupe</span>'}</div>`:''}
+       ${g&&!sel?'<p class="muted" style="font-size:.85rem;text-align:center">Clique sur « Voir » dans le tableau pour superposer un élève.</p>':''}</div>
+   </div>
+   <div class="tbl-wrap"><table class="res"><thead><tr><th>Nom</th><th>Prénom</th><th>Classe</th><th>Date</th><th>Score /20</th><th>Brut</th><th>Temps</th><th>Indices</th><th>Sorties</th><th></th></tr></thead>
+     <tbody>${list.length?list.map(r=>`<tr class="${r.id===tSel?'sel':''}"><td><b>${esc(r.nom)}</b></td><td>${esc(r.prenom)}</td><td>${esc(r.classe)}</td><td>${esc(new Date(r.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}))} <span class="src-tag">${r.source==='cloud'?'claude.ai':r.source==='import'?'importé':'ce poste'}</span></td>
+       <td class="n"><b>${fr(r.score,2)}</b></td><td class="n">${fr(r.raw,2)}</td><td class="n">${mmss(r.timeSec)}</td><td class="n">${r.hints}</td><td class="n">${r.exits}</td>
+       <td><button class="btn sm ghost" type="button" data-view="${esc(r.id)}">Voir</button> <button class="btn sm ghost" type="button" data-dl="${esc(r.id)}">JSON</button></td></tr>`).join(''):'<tr><td colspan="10" class="muted">Aucun résultat. Les copies rendues sur ce poste apparaissent ici ; importe les fichiers JSON des autres postes.</td></tr>'}</tbody></table></div>
+   ${missing.length?`<p class="missing"><b>Sans résultat (${missing.length}) :</b> ${missing.map(s=>esc(s.nom+' '+s.prenom)).join(', ')}</p>`:''}
+   ${sel?`<div class="card t-detail screen"><div class="row" style="justify-content:space-between"><h2>Copie de ${esc(sel.nom)} ${esc(sel.prenom)}</h2><button class="btn ghost sm" type="button" id="t-unsel">Fermer la copie</button></div>${bilanHtml(sel,g)}</div>`:''}`;
+  $('#t-close').onclick=closeTeacher;
+  $('#t-class').onchange=e=>{tFilter=e.target.value;renderTeacher();};
+  $('#t-json').onclick=()=>{const L=list.map(stripLocal);saveFile(L.length===1?fileBase(L[0])+'.json':`eval_cinematique_${tFilter==='all'?'toutes_classes':safeId(tFilter)}_${today()}.json`,JSON.stringify(L,null,2),'application/json');};
+  $('#t-csv').onclick=()=>{const L=list;saveFile(L.length===1?fileBase(L[0])+'.csv':`eval_cinematique_${tFilter==='all'?'toutes_classes':safeId(tFilter)}_${today()}.csv`,toCsv(L),'text/csv');};
+  $('#t-import').onchange=importFiles;
+  $('#t-clear').onclick=async()=>{const ok=await confirmBox('Vider les résultats ?',`Les ${all.length} résultats de ce poste (copies rendues ici et fichiers importés)${DB&&CAN_ADMIN?' ainsi que les résultats synchronisés sur claude.ai':''} seront supprimés. Exporte-les d'abord si tu veux les garder.`,'Tout supprimer');
+    if(!ok)return;STORE.results={};save();if(DB&&CAN_ADMIN){await clearCloud();cloudResults=[];}tSel=null;renderTeacher();toast('Résultats supprimés');};
+  $$('[data-view]').forEach(b=>b.onclick=()=>{tSel=b.dataset.view;renderTeacher();setTimeout(()=>$('.t-detail')?.scrollIntoView({behavior:'smooth'}),30);});
+  $$('[data-dl]').forEach(b=>b.onclick=()=>{const r=all.find(x=>x.id===b.dataset.dl);if(r)saveFile(fileBase(r)+'.json',JSON.stringify(stripLocal(r),null,2),'application/json');});
+  if($('#t-unsel'))$('#t-unsel').onclick=()=>{tSel=null;renderTeacher();};
+}
+function toCsv(list){
+  const q=v=>{v=String(v??'');return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const n=x=>fr(x,2).replace(/\s| /g,'');
+  const head=['NOM','Prénom','Classe','Date','Score /20','Score brut /20','Indices','Pénalité indices','Sorties plein écran','Pénalité sorties','Temps (mm:ss)','Je ne sais pas',...THEMES.map(t=>'% '+t.title),...COMP_ORDER.map(c=>'% '+COMPS[c]),'Niveau','Commentaire'];
+  const rows=list.map(r=>[r.nom,r.prenom,r.classe,new Date(r.date).toLocaleString('fr-FR'),n(r.score),n(r.raw),r.hints,n(r.hints*0.5),r.exits,r.exits*2,mmss(r.timeSec),r.nsp,
+    ...THEMES.map(t=>n(r.byTheme[t.id])),...COMP_ORDER.map(c=>n(r.byComp[c])),r.level,(r.comment||[]).join(' ')]);
+  return '﻿'+[head,...rows].map(row=>row.map(q).join(';')).join('\r\n');
+}
+async function importFiles(e){
+  const files=[...e.target.files];let added=0,dup=0,bad=0;
+  for(const f of files){try{const data=JSON.parse(await f.text());const arr=Array.isArray(data)?data:Array.isArray(data.results)?data.results:[data];
+    arr.forEach(o=>{const r=cleanResult(o);if(!r){bad++;return;}if(STORE.results[r.id]||cloudResults.some(x=>x.id===r.id)){dup++;return;}r.source='import';STORE.results[r.id]=r;added++;});}catch(err){bad++;}}
+  save();renderTeacher();toast(`${added} résultat${added>1?'s':''} importé${added>1?'s':''}${dup?`, ${dup} déjà présent${dup>1?'s':''}`:''}${bad?`, ${bad} fichier${bad>1?'s':''} illisible${bad>1?'s':''}`:''}`);
+}
+
+/* ---------- Démarrage ---------- */
+(function boot(){
+  const cur=STORE.current&&STORE.progress[STORE.current];
+  if(cur&&!cur.finished){const s=ROSTER.find(x=>x.id===STORE.current);if(s){pick(s);return;}}
+  show('scr-login');
+})();
+</script>
+
+</body></html>
